@@ -13,6 +13,12 @@
         "adapter": "kotlin"
       }
     ],
+    "rei_client": [
+      {
+        "value": "me.owdding.skyocean.compat.rei.SkyOceanReiPlugin",
+        "adapter": "kotlin"
+      }
+    ],
     "catharsis:imc/item_id": [
       "me.owdding.skyocean.compat.CatharsisSupport::id"
     ],

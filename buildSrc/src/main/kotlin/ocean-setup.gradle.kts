@@ -39,6 +39,8 @@ repositories {
         "com.terraformersmc"
     )
     scopedMaven("https://maven.nucleoid.xyz/", "eu.pb4")
+    scopedMaven("https://maven.shedaniel.me/", "me.shedaniel")
+    scopedMaven("https://maven.architectury.dev/", "dev.architectury")
     mavenCentral()
 }
 
@@ -301,4 +303,6 @@ dependencies {
     ksp(versionedCatalog["meowdding.ktcodecs"])
 
     detektPlugins(versionedCatalog["detekt.ktlintWrapper"])
+
+    versionedCatalog.getOrNull("rei.api")?.let { maybeModCompileOnly(it) }
 }

@@ -27,6 +27,7 @@ data class ForwardingVersionCatalog(
     fun version(name: String): VersionConstraint = first(name, VersionCatalog::findVersion)
 
     operator fun get(name: String): Provider<MinimalExternalModuleDependency> = library(name)
+    fun getOrNull(name: String): Provider<MinimalExternalModuleDependency>? = libraries.getOrNull(name)
 
     data class ForwardingProperty<T>(
         val parent: ForwardingVersionCatalog,
@@ -34,6 +35,7 @@ data class ForwardingVersionCatalog(
     ) {
         operator fun get(name: String): T = parent.first(name, lookup)
         fun has(name: String): Boolean = runCatching { get(name) }.map { true }.getOrDefault(false)
+        fun getOrNull(name: String): T? = runCatching { get(name) }.getOrNull()
         fun getOrFallback(
             name: String,
             fallbackName: String,

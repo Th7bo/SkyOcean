@@ -7,7 +7,6 @@ import me.owdding.skyocean.ApiDebug
 import me.owdding.skyocean.config.SkyOceanKeybind
 import me.owdding.skyocean.config.features.misc.CraftHelperConfig
 import me.owdding.skyocean.data.profile.CraftHelperStorage
-import me.owdding.skyocean.data.profile.CraftHelperStorage.setSelected
 import me.owdding.skyocean.features.item.sources.ItemSources
 import me.owdding.skyocean.features.recipe.crafthelper.eval.ItemTracker
 import me.owdding.skyocean.features.recipe.crafthelper.views.CraftHelperState
@@ -36,46 +35,85 @@ import java.util.function.UnaryOperator
 
 @Module
 object CraftHelperManager {
-    var lastData: CraftHelperRecipe? = null
+    var lastData: List<CraftHelperRecipe> = emptyList()
     var hasBeenNotified = false
-    var lastEvaluatedRoot: AtomicReference<CraftHelperState?> = AtomicReference()
+    var lastEvaluatedRoots: AtomicReference<List<CraftHelperState>?> = AtomicReference()
     private val keybind = SkyOceanKeybind("crafthelper", InputConstants.KEY_V)
-
 
     fun clear() {
         CraftHelperStorage.clear()
         CraftHelperStorage.save()
     }
 
-    fun resolve(resetLayout: () -> Unit, clear: () -> Unit): CraftHelperTree? {
-        val tree = CraftHelperStorage.data?.resolve(resetLayout, clear) ?: return null
-        return getTransformers().fold(tree) { tree, op -> op.apply(tree) }
+    fun resolveAll(resetLayout: () -> Unit, clear: () -> Unit): List<CraftHelperTree> {
+        val items = CraftHelperStorage.items
+        if (items.isEmpty()) {
+            resetLayout()
+            return emptyList()
+        }
+
+        val indicesToRemove = mutableListOf<Int>()
+        val trees = mutableListOf<CraftHelperTree>()
+
+        items.forEachIndexed { index, recipe ->
+            var shouldRemove = false
+            val tree = recipe.resolve(
+                resetLayout = {},
+                clear = { shouldRemove = true },
+            )
+            if (shouldRemove) {
+                indicesToRemove.add(index)
+            } else if (tree != null) {
+                trees.add(getTransformers().fold(tree) { t, op -> op.apply(t) })
+            }
+        }
+
+        indicesToRemove.reversed().forEach { CraftHelperStorage.removeItem(it) }
+
+        if (trees.isEmpty()) resetLayout()
+        return trees
     }
 
-    fun getTransformers(): List<UnaryOperator<CraftHelperTree>> = buildList {
+    fun resolve(resetLayout: () -> Unit, clear: () -> Unit): CraftHelperTree? =
+        resolveAll(resetLayout, clear).firstOrNull()
 
+    fun getTransformers(): List<UnaryOperator<CraftHelperTree>> = buildList {
         CraftHelperConfig.compactedCutoffDegree.takeIf { it > 0 }?.let {
             add { tree -> CompactedResourceCutoffTreeTransformer.apply(it, tree) }
         }
-
     }
 
     @Subscription(TickEvent::class)
     @TimePassed("5t")
     fun onTick() {
-        if (lastData != CraftHelperStorage.data) {
-            this.lastData = CraftHelperStorage.data
+        if (lastData != CraftHelperStorage.items) {
+            this.lastData = CraftHelperStorage.items
             hasBeenNotified = false
-            lastEvaluatedRoot.set(null)
+            lastEvaluatedRoots.set(null)
         }
-        val tree = resolve({}, ::clear) ?: return
-        SimpleRecipeView {
-            if (it.path != "root") return@SimpleRecipeView
-            lastEvaluatedRoot.set(it)
-            if (!CraftHelperConfig.doneMessage) return@SimpleRecipeView
-            if (!it.childrenDone) return@SimpleRecipeView
-            if (hasBeenNotified) return@SimpleRecipeView
-            hasBeenNotified = true
+
+        val trees = resolveAll({}, ::clear)
+        if (trees.isEmpty()) return
+
+        val tracker = ItemTracker(ItemSources.craftHelperSources - CraftHelperConfig.disallowedSources.toSet())
+        val roots = mutableListOf<CraftHelperState>()
+
+        trees.forEach { tree ->
+            SimpleRecipeView { state ->
+                if (state.path != "root") return@SimpleRecipeView
+                roots.add(state)
+            }.visit(tree, tracker)
+        }
+
+        lastEvaluatedRoots.set(roots)
+
+        val allChildrenDone = roots.isNotEmpty() && roots.all { it.childrenDone }
+        if (!CraftHelperConfig.doneMessage) return
+        if (!allChildrenDone) return
+        if (hasBeenNotified) return
+        hasBeenNotified = true
+
+        if (roots.size == 1) {
             text("You have all materials to craft ") {
                 CraftHelperStorage.selectedItem?.toItem()?.hoverName?.let { item ->
                     append("${CraftHelperStorage.selectedAmount}x ") { color = TextColor.GREEN }
@@ -83,9 +121,13 @@ object CraftHelperManager {
                 } ?: append("your selected craft helper tree")
                 append("!")
             }.sendWithPrefix()
-        }.visit(tree, ItemTracker(ItemSources.craftHelperSources - CraftHelperConfig.disallowedSources.toSet()))
+        } else {
+            text("You have all materials for all ") {
+                append("${roots.size}") { color = TextColor.GREEN }
+                append(" craft helper items!")
+            }.sendWithPrefix()
+        }
     }
-
 
     @Subscription
     fun onKeybind(event: ScreenKeyReleasedEvent.Pre) {
@@ -104,20 +146,34 @@ object CraftHelperManager {
             return
         }
 
-        setSelected(SkyBlockId.fromItem(item))
+        val skyBlockId = SkyBlockId.fromItem(item)
+        val added = CraftHelperStorage.addItem(skyBlockId)
         McScreen.refreshScreen()
 
-        Text.of("Set selected Crafthelper item to ") {
-            append(item.hoverName) {
-                this.bold = true
-            }
-        }.sendWithPrefix()
+        if (added) {
+            Text.of("Added ") {
+                append(item.hoverName) { this.bold = true }
+                append(" to the craft helper")
+            }.sendWithPrefix()
+        } else {
+            Text.of {
+                append(item.hoverName) { this.bold = true }
+                append(" is already in the craft helper")
+                color = TextColor.YELLOW
+            }.sendWithPrefix()
+        }
     }
 
     @ApiDebug("Craft Helper")
     internal fun debug(builder: DebugBuilder) = with(builder) {
-        field("Selected", CraftHelperStorage.selectedItem)
-        field("Amount", CraftHelperStorage.selectedAmount)
+        field("Items", CraftHelperStorage.items.size)
+        CraftHelperStorage.items.forEachIndexed { i, recipe ->
+            when (recipe) {
+                is me.owdding.skyocean.features.recipe.crafthelper.data.NormalCraftHelperRecipe ->
+                    field("Item $i", "${recipe.item} x${recipe.amount}")
+                else -> field("Item $i", recipe.type.name)
+            }
+        }
         iterable("Allowed Sources", ItemSources.craftHelperSources - CraftHelperConfig.disallowedSources.toSet()) {
             literal(it.name)
         }
@@ -140,7 +196,6 @@ object CraftHelperManager {
                 append(")")
                 appendLine()
             }
-
         })
     }
 }

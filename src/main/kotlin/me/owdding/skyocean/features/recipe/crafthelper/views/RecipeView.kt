@@ -323,7 +323,8 @@ class WidgetBuilder(val includeParentOverride: Boolean? = null, val refreshCallb
 
     context(state: CraftHelperState)
     fun text(prefix: String = "") = Displays.component(
-        Text.of {
+        shadow = true,
+        component = Text.of {
             val parentAmount = if ((includeParentOverride != null && includeParentOverride) || CraftHelperConfig.parentAmount) {
                 state.amountThroughParents
             } else 0

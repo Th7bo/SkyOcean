@@ -1,6 +1,5 @@
 package me.owdding.skyocean.features.recipe.crafthelper.resolver
 
-import me.owdding.skyocean.data.profile.CraftHelperStorage
 import me.owdding.skyocean.features.recipe.SimpleRecipeApi.getBestRecipe
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperTree
 import me.owdding.skyocean.features.recipe.crafthelper.data.CraftHelperRecipeType
@@ -14,25 +13,24 @@ object DefaultTreeResolver : TreeResolver<NormalCraftHelperRecipe> {
     override val type: CraftHelperRecipeType get() = CraftHelperRecipeType.NORMAL
 
     override fun resolve(recipe: NormalCraftHelperRecipe, resetLayout: () -> Unit, clear: () -> Unit): CraftHelperTree? {
-
-        val currentRecipe = CraftHelperStorage.selectedItem ?: run {
+        val item = recipe.item ?: run {
             resetLayout()
             return null
         }
 
-        val recipe = getBestRecipe(currentRecipe) ?: run {
-            Text.of("No recipe found for $currentRecipe!") { this.color = TextColor.RED }.sendWithPrefix()
+        val bestRecipe = getBestRecipe(item) ?: run {
+            Text.of("No recipe found for $item!") { this.color = TextColor.RED }.sendWithPrefix()
             resetLayout()
             clear()
             return null
         }
-        val output = recipe.output ?: run {
+        val output = bestRecipe.output ?: run {
             Text.of("Recipe output is null!") { this.color = TextColor.RED }.sendWithPrefix()
             resetLayout()
             clear()
             return null
         }
 
-        return CraftHelperTree(recipe, output, CraftHelperStorage.selectedAmount.coerceAtLeast(1))
+        return CraftHelperTree(bestRecipe, output, recipe.amount.coerceAtLeast(1))
     }
 }

@@ -18,9 +18,12 @@ import me.owdding.skyocean.features.recipe.ItemLikeIngredient
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperTree
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperManager
 import me.owdding.skyocean.features.recipe.crafthelper.eval.ItemTracker
+import me.owdding.skyocean.features.recipe.crafthelper.views.CraftHelperState
+import me.owdding.skyocean.features.recipe.crafthelper.views.SimpleRecipeView
 import me.owdding.skyocean.features.recipe.crafthelper.views.WidgetBuilder
 import me.owdding.skyocean.features.recipe.crafthelper.views.raw.RawFormatter
 import me.owdding.skyocean.features.recipe.crafthelper.views.tree.TreeFormatter
+import me.owdding.skyocean.features.recipe.serialize
 import me.owdding.skyocean.utils.LateInitModule
 import me.owdding.skyocean.utils.chat.Icons
 import me.owdding.skyocean.utils.debugToggle
@@ -51,6 +54,7 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
     private val ignoreChecks by debugToggle("cafthelper/ignore_checks")
 
     private var craftHelperLayout: LayoutElement? = null
+    var currentPage = 0
 
     private const val BACKGROUND_PADDING = 14
 
@@ -72,11 +76,39 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
             layout.visitWidgets { event.widgets.remove(it) }
         }
         callback = callback@{ save ->
-            val tree = CraftHelperManager.resolve(::resetLayout, CraftHelperManager::clear) ?: return@callback
-            val output = tree.output
+            val trees = CraftHelperManager.resolveAll(::resetLayout, CraftHelperManager::clear)
+            if (trees.isEmpty()) return@callback
+
+            val multiItem = trees.size > 1
+            currentPage = currentPage.coerceIn(0, if (multiItem) trees.size else 0)
+
             resetLayout()
             layout.tryClear()
-                layout.addChild(visualize(tree, output, maxAvailableWidth) { callback })
+
+            val widget = when {
+                multiItem && currentPage == 0 -> visualizeTotal(
+                    trees, maxAvailableWidth, callback,
+                    onNext = { currentPage = 1; callback(false) },
+                    onClearAll = { CraftHelperStorage.clear(); callback(false) },
+                )
+                multiItem -> {
+                    val idx = currentPage - 1
+                    visualize(
+                        trees[idx], trees[idx].output, idx, maxAvailableWidth, callback,
+                        onPrev = { currentPage--; callback(false) },
+                        onNext = if (currentPage < trees.size) { { currentPage++; callback(false) } } else null,
+                        onRemove = { CraftHelperStorage.removeItem(idx); currentPage = 0; callback(false) },
+                    )
+                }
+                else -> visualize(
+                    trees[0], trees[0].output, 0, maxAvailableWidth, callback,
+                    onPrev = null,
+                    onNext = null,
+                    onRemove = { CraftHelperStorage.clear(); callback(false) },
+                )
+            }
+
+            layout.addChild(widget)
             layout.arrangeElements()
             layout.setPosition(CraftHelperConfig.position.position(layout.width, layout.height))
             layout.visitWidgets { event.widgets.add(it) }
@@ -99,10 +131,109 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
     }
 
     @Suppress("LongMethod")
-    private fun visualize(tree: CraftHelperTree, output: ItemLikeIngredient, maxWidth: Int, callback: () -> ((save: Boolean) -> Unit)): AbstractWidget {
+    private fun visualizeTotal(
+        trees: List<CraftHelperTree>,
+        maxWidth: Int,
+        refreshCallback: (save: Boolean) -> Unit,
+        onNext: () -> Unit,
+        onClearAll: () -> Unit,
+    ): AbstractWidget {
         val sources = ItemSources.craftHelperSources - CraftHelperConfig.disallowedSources.toSet()
         val tracker = ItemTracker(sources)
-        val callback = callback()
+        val builder = WidgetBuilder(refreshCallback = refreshCallback)
+
+        val allLeafStates = mutableListOf<CraftHelperState>()
+        trees.forEach { tree ->
+            var root: CraftHelperState? = null
+            SimpleRecipeView { root = it }.visit(tree, tracker)
+            root?.collect()?.filter { !it.hasChildren }?.let { allLeafStates.addAll(it) }
+        }
+        val mergedStates = allLeafStates
+            .groupBy { it.ingredient.serialize() }
+            .values
+            .map(CraftHelperState::merge)
+
+        return LayoutFactory.vertical(2) {
+            var maxLine = 0
+            var lines = 0
+            val body = LayoutFactory.vertical {
+                val list = mutableListOf<AbstractWidget>()
+                if (mergedStates.isEmpty()) {
+                    lines = 1
+                    textDisplay("All materials ready!") { this.color = TextColor.GREEN }
+                } else {
+                    mergedStates.forEachIndexed { index, mergedState ->
+                        if (mergedState.isDone() && CraftHelperConfig.rawFormatterHideCompleted) return@forEachIndexed
+                        lines++
+                        val prefix = if (index < mergedStates.size - 1) "├ " else "└ "
+                        context(mergedState) {
+                            val w = builder.listEntry(prefix)
+                            maxLine = maxOf(maxLine, w.width + 10)
+                            list.add(w)
+                        }
+                    }
+                    list.forEach(::widget)
+                }
+            }.apply { visitChildren { child -> maxLine = maxOf(maxLine, child.width + 10) } }
+
+            val contentWidth = minOf(maxLine, maxWidth)
+
+            horizontal(5, MIDDLE) {
+                vertical(alignment = MIDDLE) {
+                    spacer(max(0, contentWidth - 10))
+                    display(Displays.component(Text.of("Total") { this.color = TextColor.GREEN }))
+                    display(Displays.component(Text.of("${trees.size} items") { this.color = TextColor.GRAY }))
+                }
+                vertical(alignment = MIDDLE) {
+                    widget(
+                        Displays.component(Text.of(Icons.CROSS) { this.color = TextColor.RED }).asButtonLeft {
+                            onClearAll()
+                        }.withoutTooltipDelay().withTooltip(Text.of("Clear all") { this.color = TextColor.RED }),
+                    )
+                    string("")
+                }
+            }
+
+            widget(body.asScrollable(contentWidth, McFont.height * 20.coerceAtMost(lines)))
+        }.asWidget().let { innerWidget ->
+            val navW = 10
+            val h = innerWidget.height
+            val withNav = LayoutFactory.horizontal(0, MIDDLE) {
+                widget(
+                    Displays.center(navW, h, Displays.component(component = Text.of("<") { this.color = TextColor.DARK_GRAY }, shadow = true))
+                        .asButtonLeft { }.withoutTooltipDelay(),
+                )
+                widget(innerWidget)
+                widget(
+                    Displays.center(navW, h, Displays.component(component = Text.of(">") { this.color = TextColor.GREEN }, shadow = true))
+                        .asButtonLeft { onNext() }.withoutTooltipDelay(),
+                )
+            }.asWidget()
+            val background = BackgroundWidget(
+                SkyOcean.minecraft("tooltip/background"), SkyOcean.minecraft("tooltip/frame"),
+                widget = withNav, padding = BACKGROUND_PADDING,
+            )
+            background.setPosition(CraftHelperConfig.margin, (McScreen.self?.height?.div(2) ?: 0) - (withNav.height / 2))
+            background
+        }
+    }
+
+    @Suppress("LongMethod")
+    private fun visualize(
+        tree: CraftHelperTree,
+        output: ItemLikeIngredient,
+        itemIndex: Int,
+        maxWidth: Int,
+        refreshCallback: (save: Boolean) -> Unit,
+        onPrev: (() -> Unit)?,
+        onNext: (() -> Unit)?,
+        onRemove: () -> Unit,
+    ): AbstractWidget {
+        val sources = ItemSources.craftHelperSources - CraftHelperConfig.disallowedSources.toSet()
+        val tracker = ItemTracker(sources)
+
+        val canModify = CraftHelperStorage.canModifyCountAt(itemIndex)
+        val selectedAmount = CraftHelperStorage.getAmountAt(itemIndex)
 
         return LayoutFactory.vertical(2) {
             var maxLine = 0
@@ -115,7 +246,7 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
                         CraftHelperFormat.TREE -> TreeFormatter
                     }
 
-                    formatter.format(tree, tracker, WidgetBuilder(refreshCallback = callback)) {
+                    formatter.format(tree, tracker, WidgetBuilder(refreshCallback = refreshCallback)) {
                         lines++
                         maxLine = maxOf(maxLine, it.width + 10)
                         list.add(it)
@@ -147,19 +278,19 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
                             Displays.component(
                                 Text.of {
                                     append("-")
-                                    this.color = if (CraftHelperStorage.canModifyCount) TextColor.RED else TextColor.GRAY
+                                    this.color = if (canModify) TextColor.RED else TextColor.GRAY
                                 },
                             ).asButtonLeft {
-                                if (!CraftHelperStorage.canModifyCount) return@asButtonLeft
+                                if (!canModify) return@asButtonLeft
 
-                                val value = CraftHelperStorage.selectedAmount / (tree.amountPerCraft)
+                                val value = selectedAmount / (tree.amountPerCraft)
                                 val newValue = if (McScreen.isShiftDown) {
                                     value - 10
                                 } else {
                                     value - 1
                                 }
-                                CraftHelperStorage.setAmount(max(1, newValue) * tree.amountPerCraft)
-                                callback(true)
+                                CraftHelperStorage.setAmountAt(itemIndex, max(1, newValue) * tree.amountPerCraft)
+                                refreshCallback(true)
                             }.withTooltip(
                                 Text.multiline(
                                     "§eClick§r to decrease by §c1",
@@ -167,25 +298,25 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
                                 ).apply { this.color = TextColor.GRAY },
                             ).withoutTooltipDelay(),
                         )
-                        textDisplay(" ${CraftHelperStorage.selectedAmount} ", shadow = true) {
+                        textDisplay(" $selectedAmount ", shadow = true) {
                             this.color = TextColor.DARK_GRAY
                         }
                         widget(
                             Displays.component(
                                 Text.of {
                                     append("+")
-                                    this.color = if (CraftHelperStorage.canModifyCount) TextColor.GREEN else TextColor.GRAY
+                                    this.color = if (canModify) TextColor.GREEN else TextColor.GRAY
                                 },
                             ).asButtonLeft {
-                                if (!CraftHelperStorage.canModifyCount) return@asButtonLeft
-                                val value = CraftHelperStorage.selectedAmount / tree.amountPerCraft
+                                if (!canModify) return@asButtonLeft
+                                val value = selectedAmount / tree.amountPerCraft
                                 val newValue = if (McScreen.isShiftDown) {
                                     value + 10
                                 } else {
                                     value + 1
                                 }
-                                CraftHelperStorage.setAmount(newValue * tree.amountPerCraft)
-                                callback(true)
+                                CraftHelperStorage.setAmountAt(itemIndex, newValue * tree.amountPerCraft)
+                                refreshCallback(true)
                             }.withTooltip(
                                 Text.multiline(
                                     "§eClick§r to increase by §a1",
@@ -198,21 +329,37 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
                 vertical(alignment = MIDDLE) {
                     widget(
                         Displays.component(Text.of(Icons.CROSS) { this.color = TextColor.RED }).asButtonLeft {
-                            CraftHelperStorage.setSelected(null)
-                            callback(false)
-                        }.withoutTooltipDelay().withTooltip(Text.of("Close") { this.color = TextColor.RED }),
+                            onRemove()
+                        }.withoutTooltipDelay().withTooltip(Text.of("Remove") { this.color = TextColor.RED }),
                     )
                     string("")
                 }
             }
 
             widget(body.asScrollable(contentWidth, McFont.height * 20.coerceAtMost(lines)))
-        }.asWidget().let {
+        }.asWidget().let { innerWidget ->
+            val withNav = if (onPrev != null || onNext != null) {
+                val navW = 10
+                val h = innerWidget.height
+                LayoutFactory.horizontal(0, MIDDLE) {
+                    widget(
+                        Displays.center(navW, h, Displays.component(component = Text.of("<") { this.color = if (onPrev != null) TextColor.GREEN else TextColor.DARK_GRAY }, shadow = true))
+                            .asButtonLeft { onPrev?.invoke() }.withoutTooltipDelay(),
+                    )
+                    widget(innerWidget)
+                    widget(
+                        Displays.center(navW, h, Displays.component(component = Text.of(">") { this.color = if (onNext != null) TextColor.GREEN else TextColor.DARK_GRAY }, shadow = true))
+                            .asButtonLeft { onNext?.invoke() }.withoutTooltipDelay(),
+                    )
+                }.asWidget()
+            } else {
+                innerWidget
+            }
             val background = BackgroundWidget(
                 SkyOcean.minecraft("tooltip/background"), SkyOcean.minecraft("tooltip/frame"),
-                widget = it, padding = BACKGROUND_PADDING,
+                widget = withNav, padding = BACKGROUND_PADDING,
             )
-            background.setPosition(CraftHelperConfig.margin, (McScreen.self?.height?.div(2) ?: 0) - (it.height / 2))
+            background.setPosition(CraftHelperConfig.margin, (McScreen.self?.height?.div(2) ?: 0) - (withNav.height / 2))
             background
         }
     }

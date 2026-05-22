@@ -5,7 +5,8 @@ import me.owdding.ktmodules.Module
 import me.owdding.lib.compat.REIRuntimeCompatability
 import me.owdding.skyocean.ApiDebug
 import me.owdding.skyocean.config.SkyOceanKeybind
-import me.owdding.skyocean.config.features.misc.CraftHelperConfig
+import me.owdding.skyocean.config.features.misc.crafthelper.CraftHelperConfig
+import me.owdding.skyocean.config.features.misc.crafthelper.CraftHelperNotificationType
 import me.owdding.skyocean.data.profile.CraftHelperStorage
 import me.owdding.skyocean.features.item.sources.ItemSources
 import me.owdding.skyocean.features.recipe.crafthelper.eval.ItemTracker
@@ -14,6 +15,7 @@ import me.owdding.skyocean.features.recipe.crafthelper.views.SimpleRecipeView
 import me.owdding.skyocean.features.recipe.crafthelper.visitors.CompactedResourceCutoffTreeTransformer
 import me.owdding.skyocean.utils.Utils.refreshScreen
 import me.owdding.skyocean.utils.Utils.text
+import me.owdding.skyocean.utils.chat.ChatUtils
 import me.owdding.skyocean.utils.chat.ChatUtils.sendWithPrefix
 import me.owdding.skyocean.utils.debug.DebugBuilder
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
@@ -22,6 +24,7 @@ import tech.thatgravyboat.skyblockapi.api.events.screen.ScreenKeyReleasedEvent
 import tech.thatgravyboat.skyblockapi.api.events.time.TickEvent
 import tech.thatgravyboat.skyblockapi.api.remote.api.SkyBlockId
 import tech.thatgravyboat.skyblockapi.api.remote.api.SkyBlockId.Companion.getSkyBlockId
+import tech.thatgravyboat.skyblockapi.helpers.McClient
 import tech.thatgravyboat.skyblockapi.helpers.McScreen
 import tech.thatgravyboat.skyblockapi.utils.extentions.getHoveredSlot
 import tech.thatgravyboat.skyblockapi.utils.extentions.toFormattedString
@@ -108,24 +111,55 @@ object CraftHelperManager {
         lastEvaluatedRoots.set(roots)
 
         val allChildrenDone = roots.isNotEmpty() && roots.all { it.childrenDone }
-        if (!CraftHelperConfig.doneMessage) return
         if (!allChildrenDone) return
         if (hasBeenNotified) return
         hasBeenNotified = true
 
-        if (roots.size == 1) {
-            text("You have all materials to craft ") {
-                CraftHelperStorage.selectedItem?.toItem()?.hoverName?.let { item ->
-                    append("${CraftHelperStorage.selectedAmount}x ") { color = TextColor.GREEN }
-                    append(item)
-                } ?: append("your selected craft helper tree")
-                append("!")
-            }.sendWithPrefix()
-        } else {
-            text("You have all materials for all ") {
-                append("${roots.size}") { color = TextColor.GREEN }
-                append(" craft helper items!")
-            }.sendWithPrefix()
+        CraftHelperConfig.doneNotificationConfig.doneTypes.forEach { doneNotification(it, roots.size) }
+    }
+
+    fun doneNotification(type: CraftHelperNotificationType, rootCount: Int) {
+        when (type) {
+            CraftHelperNotificationType.DONE_MESSAGE -> {
+                if (rootCount == 1) {
+                    text("You have all materials to craft ") {
+                        CraftHelperStorage.selectedItem?.toItem()?.hoverName?.let { item ->
+                            append("${CraftHelperStorage.selectedAmount}x ") { color = TextColor.GREEN }
+                            append(item)
+                        } ?: append("your selected craft helper tree")
+                        append("!")
+                    }.sendWithPrefix()
+                } else {
+                    text("You have all materials for all ") {
+                        append("$rootCount") { color = TextColor.GREEN }
+                        append(" craft helper items!")
+                    }.sendWithPrefix()
+                }
+            }
+            CraftHelperNotificationType.DONE_TITLE -> {
+                val title = if (rootCount == 1) {
+                    CraftHelperStorage.selectedItem?.let {
+                        Text.of {
+                            append(ChatUtils.ICON_WITH_SPACE)
+                            append("${CraftHelperStorage.selectedAmount}x ") { color = TextColor.GREEN }
+                            append(it.toItem().hoverName)
+                            append(" Craftable!") { color = TextColor.GREEN }
+                        }
+                    } ?: Text.of {
+                        append("CraftHelper Item Craftable!") { this.color = TextColor.GREEN }
+                    }
+                } else {
+                    Text.of {
+                        append(ChatUtils.ICON_WITH_SPACE)
+                        append("$rootCount") { color = TextColor.GREEN }
+                        append(" CraftHelper Items Craftable!") { color = TextColor.GREEN }
+                    }
+                }
+                McClient.setTitle(title, null, 0f, 3f, 0.5f)
+            }
+            CraftHelperNotificationType.DONE_SOUND -> {
+                McClient.playSound(CraftHelperConfig.doneNotificationConfig.soundEvent)
+            }
         }
     }
 

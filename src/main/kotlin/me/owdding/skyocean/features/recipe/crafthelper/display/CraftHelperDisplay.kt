@@ -1,5 +1,6 @@
 package me.owdding.skyocean.features.recipe.crafthelper.display
 
+import earth.terrarium.olympus.client.utils.ListenableState
 import me.owdding.lib.builder.LayoutFactory
 import me.owdding.lib.builder.MIDDLE
 import me.owdding.lib.compat.REIRenderOverlayEvent
@@ -28,6 +29,7 @@ import me.owdding.skyocean.utils.LateInitModule
 import me.owdding.skyocean.utils.chat.Icons
 import me.owdding.skyocean.utils.debugToggle
 import me.owdding.skyocean.utils.extensions.asScrollable
+import me.owdding.skyocean.utils.extensions.createIntInput
 import me.owdding.skyocean.utils.extensions.tryClear
 import me.owdding.skyocean.utils.extensions.withoutTooltipDelay
 import me.owdding.skyocean.utils.rendering.ExtraDisplays
@@ -298,8 +300,26 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
                                 ).apply { this.color = TextColor.GRAY },
                             ).withoutTooltipDelay(),
                         )
-                        textDisplay(" $selectedAmount ", shadow = true) {
-                            this.color = TextColor.DARK_GRAY
+                        if (canModify) {
+                            val amountState = ListenableState.of(selectedAmount)
+                            amountState.registerListener { value ->
+                                val crafts = max(1, value / tree.amountPerCraft)
+                                CraftHelperStorage.setAmountAt(itemIndex, crafts * tree.amountPerCraft)
+                            }
+                            widget(createIntInput(state = amountState, width = 55, height = McFont.height + 2) as AbstractWidget)
+                            widget(
+                                Displays.component(
+                                    Text.of(Icons.CHECKMARK) { this.color = TextColor.GREEN },
+                                ).asButtonLeft {
+                                    refreshCallback(true)
+                                }.withTooltip(
+                                    Text.of("Apply amount") { this.color = TextColor.GRAY },
+                                ).withoutTooltipDelay(),
+                            )
+                        } else {
+                            textDisplay(" $selectedAmount ", shadow = true) {
+                                this.color = TextColor.DARK_GRAY
+                            }
                         }
                         widget(
                             Displays.component(

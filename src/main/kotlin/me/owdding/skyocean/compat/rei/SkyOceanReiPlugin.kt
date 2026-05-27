@@ -1,6 +1,7 @@
 package me.owdding.skyocean.compat.rei
 
 //? < 26.1 {
+/*
 
 import me.owdding.skyocean.data.profile.CraftHelperStorage
 import me.owdding.skyocean.utils.Utils.refreshScreen
@@ -137,4 +138,4 @@ class SkyOceanReiPlugin : REIClientPlugin {
         }
     }
 }
-//? }
+*///? }

@@ -106,8 +106,7 @@ object HotspotAPI {
             else -> 9.0
         }
 
-        val maxDistance = maxHotspotSize + 0.5
-        val maxDistanceSquared = maxDistance.pow(2)
+        val maxDistanceSquared = maxHotspotSize + 0.5
 
         val match = _hotspots.values.asSequence().mapNotNull { entry ->
             val pos = entry.pos ?: return@mapNotNull null
@@ -121,7 +120,7 @@ object HotspotAPI {
         match.first.radius = sqrt(match.second).roundToHalf()
 
         // particles cancelled
-        if (HotspotFeatures.isEnabled()) event.cancel()
+        if (HotspotFeatures.shouldHideParticles()) event.cancel()
     }
 
     private fun ClientboundLevelParticlesPacket.isHotSpotParticle(): Boolean {

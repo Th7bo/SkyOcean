@@ -20,7 +20,24 @@
       "Bash(javap -p tech/thatgravyboat/skyblockapi/api/events/screen/ScreenInitializedEvent.class)",
       "Bash(javap -p me/shedaniel/rei/api/common/entry/EntryIngredient.class)",
       "Bash(javap -p me/shedaniel/rei/api/common/entry/EntryStack.class)",
-      "Bash(grep -rn \"//?\" C:/Users/thibo/SkyOcean/src/)"
+      "Bash(grep -rn \"//?\" C:/Users/thibo/SkyOcean/src/)",
+      "Bash(./gradlew :versions:1.21.10:compileKotlin)",
+      "Bash(./gradlew :1.21.11:compileKotlin)",
+      "Bash(./gradlew :1.21.10:compileKotlin)",
+      "Bash(javap -p \"versions/1.21.11/build/processIncludeJars/meowdding-lib-4.1.6-1.21.11.jar!/me/owdding/lib/displays/DisplayKt.class\")",
+      "Bash(javap -p me/owdding/lib/displays/DisplayKt.class)",
+      "Bash(javap -p me/owdding/lib/displays/Displays.class)",
+      "Bash(grep -v \"lambda\\\\$\\\\|Companion\\\\|INSTANCE\\\\|\\\\$1\\\\|\\\\$2\\\\|\\\\$3\\\\|static {\")",
+      "Bash(javap -p me/owdding/lib/displays/DisplayExtensionsKt.class)",
+      "Bash(grep -v \"lambda\\\\$\\\\|static {\")",
+      "Bash(javap -p me/owdding/lib/layouts/LayoutsKt.class)",
+      "Bash(javap -p me/owdding/lib/layouts/LayoutExtensionsKt.class)",
+      "Bash(javap -p me/owdding/lib/layouts/LayoutExtensionKt.class)",
+      "Bash(javap -p me/owdding/lib/layouts/BackgroundWidget.class)",
+      "Bash(git remote *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }

@@ -11,11 +11,13 @@ import me.owdding.skyocean.features.recipe.crafthelper.resolver.SkyShardsTreeRes
 import me.owdding.skyocean.generated.DispatchHelper
 import me.owdding.skyocean.repo.attributes.SkyShardsAttributeRepoData
 import tech.thatgravyboat.skyblockapi.api.remote.api.SkyBlockId
+import java.util.UUID
 
 
 @GenerateCodec
 data class SkyShardsRecipe(
     var tree: SkyShardsMethod,
+    override val group: UUID?,
 ) : CraftHelperRecipe(CraftHelperRecipeType.SKY_SHARDS, false) {
     override fun resolve(
         resetLayout: () -> Unit,

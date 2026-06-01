@@ -12,8 +12,8 @@ import tech.thatgravyboat.skyblockapi.utils.text.TextStyle.color
 
 
 object FarmingToolkitSource : ItemSource, ItemContext {
-    override val type = ItemSources.FARMING_TOOLKIT
-    override val source: ItemSources = ItemSources.FARMING_TOOLKIT
+    override val type get() = ItemSources.FARMING_TOOLKIT
+    override val source: ItemSources get() = ItemSources.FARMING_TOOLKIT
 
     override fun getAll(): List<SimpleTrackedItem> = FarmingItemStorage.data?.toolkitItems?.map {
         SimpleTrackedItem(it, this)

@@ -8,6 +8,7 @@ import me.owdding.skyocean.config.SkyOceanKeybind
 import me.owdding.skyocean.config.features.misc.crafthelper.CraftHelperConfig
 import me.owdding.skyocean.config.features.misc.crafthelper.CraftHelperNotificationType
 import me.owdding.skyocean.data.profile.CraftHelperStorage
+import me.owdding.skyocean.events.RegisterSkyOceanCommandEvent
 import me.owdding.skyocean.features.item.sources.ItemSources
 import me.owdding.skyocean.features.recipe.crafthelper.eval.ItemTracker
 import me.owdding.skyocean.features.recipe.crafthelper.views.CraftHelperState
@@ -49,7 +50,7 @@ object CraftHelperManager {
     }
 
     fun resolveAll(resetLayout: () -> Unit, clear: () -> Unit): List<CraftHelperTree> {
-        val items = CraftHelperStorage.items
+        val items = CraftHelperStorage.activeItems
         if (items.isEmpty()) {
             resetLayout()
             return emptyList()
@@ -89,8 +90,8 @@ object CraftHelperManager {
     @Subscription(TickEvent::class)
     @TimePassed("5t")
     fun onTick() {
-        if (lastData != CraftHelperStorage.items) {
-            this.lastData = CraftHelperStorage.items
+        if (lastData != CraftHelperStorage.activeItems) {
+            this.lastData = CraftHelperStorage.activeItems
             hasBeenNotified = false
             lastEvaluatedRoots.set(null)
         }
@@ -160,6 +161,13 @@ object CraftHelperManager {
             CraftHelperNotificationType.DONE_SOUND -> {
                 McClient.playSound(CraftHelperConfig.doneNotificationConfig.soundEvent)
             }
+        }
+    }
+
+    @Subscription
+    fun registerCommand(event: RegisterSkyOceanCommandEvent) {
+        event.registerWithCallback("crafthelper") {
+            McClient.setScreenAsync { CraftHelperScreen }
         }
     }
 

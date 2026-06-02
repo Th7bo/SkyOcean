@@ -21,7 +21,7 @@ object DefaultTreeResolver : TreeResolver<NormalCraftHelperRecipe> {
 
         val bestRecipe = getBestRecipe(item) ?: return CraftHelperTree(
             recipe = null,
-            output = SkyOceanItemIngredient(item, CraftHelperStorage.selectedAmount.coerceAtLeast(1)),
+            output = SkyOceanItemIngredient(item, recipe.amount.coerceAtLeast(1)),
         )
         val output = bestRecipe.output ?: run {
             Text.of("Recipe output is null!") { this.color = TextColor.RED }.sendWithPrefix()
@@ -29,6 +29,6 @@ object DefaultTreeResolver : TreeResolver<NormalCraftHelperRecipe> {
             clear()
             return null
         }
-        return CraftHelperTree(bestRecipe, output, bestRecipe.amount.coerceAtLeast(1))
+        return CraftHelperTree(bestRecipe, output, recipe.amount.coerceAtLeast(1))
     }
 }

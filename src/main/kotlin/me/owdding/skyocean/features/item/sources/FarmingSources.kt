@@ -16,7 +16,7 @@ object FarmingToolkitSource : ItemSource, ItemContext {
     override val source: ItemSources get() = ItemSources.FARMING_TOOLKIT
 
     override fun getAll(): List<SimpleTrackedItem> = FarmingItemStorage.data?.toolkitItems?.map {
-        SimpleTrackedItem(it, this)
+        SimpleTrackedItem(it, FarmingToolkitSource)
     } ?: emptyList()
 
 

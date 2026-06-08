@@ -97,10 +97,12 @@ object SimpleRecipeApi : MeowddingLogger by SkyOcean.featureLogger(), LateInitLo
         return runCatching {
             idToRecipes[id]?.firstOrNull()?.let { return@runCatching it }
 
+            // NEU encodes pet/rune tiers in the id as "NAME;TIER"; strip it so we match across all tiers.
+            val cleanId = id.cleanId.substringBefore(';')
             val variants = when {
-                id.isPet -> SkyBlockRarity.entries.reversed().map { SkyBlockId.pet(id.cleanId, it.name) }
-                id.isRune -> (3 downTo 0).map { SkyBlockId.rune(id.cleanId, it) }
-                id.isEnchantment -> (10 downTo 0).map { SkyBlockId.enchantment(id.cleanId, it) }
+                id.isPet -> SkyBlockRarity.entries.reversed().map { SkyBlockId.pet(cleanId, it.name) }
+                id.isRune -> (3 downTo 0).map { SkyBlockId.rune(cleanId, it) }
+                id.isEnchantment -> (10 downTo 0).map { SkyBlockId.enchantment(cleanId, it) }
                 else -> emptyList()
             }
             variants.mapNotNull { idToRecipes[it] }.firstNotNullOfOrNull { it.firstOrNull() }?.let { return@runCatching it }

@@ -61,7 +61,7 @@ class SkyOceanReiPlugin : REIClientPlugin {
                         val itemIdMethod = output.javaClass.getMethod("getItemId")
                         val itemId = itemIdMethod.invoke(output) as? String ?: continue
                         if (itemId == "SKYBLOCK_COIN" || itemId.isEmpty()) continue
-                        return SkyBlockId.unknownType(itemId)
+                        return neuIdToSkyBlockId(itemId)
                     }
                 }
 
@@ -75,7 +75,7 @@ class SkyOceanReiPlugin : REIClientPlugin {
                             val neuItemMethod = skyblockIdClass?.getMethod("getNeuItem")
                             val neuItem = neuItemMethod?.invoke(firmamentId) as? String
                             if (neuItem != null) {
-                                return SkyBlockId.unknownType(neuItem)
+                                return neuIdToSkyBlockId(neuItem)
                             }
                         }
                     }
@@ -83,6 +83,23 @@ class SkyOceanReiPlugin : REIClientPlugin {
 
                 null
             }.getOrNull()
+        }
+
+        /**
+         * Converts a NEU item id into a [SkyBlockId].
+         *
+         * NEU encodes pet (and rune) tiers in the id itself as `NAME;TIER` (e.g. `GOLDEN_DRAGON;4`).
+         * [SkyBlockId.unknownType] cannot resolve that form because the repos are keyed by the bare
+         * `NAME`, so crafted pets like the Golden/Rose/Jade Dragon would yield a null id and never get
+         * a craft helper button. When the tiered form fails to resolve we retry with the suffix
+         * stripped; [SimpleRecipeApi.getBestRecipe] then matches the recipe across rarities.
+         */
+        private fun neuIdToSkyBlockId(itemId: String): SkyBlockId? {
+            SkyBlockId.unknownType(itemId)?.let { return it }
+            if (itemId.contains(';')) {
+                SkyBlockId.unknownType(itemId.substringBefore(';'))?.let { return it }
+            }
+            return null
         }
     }
 

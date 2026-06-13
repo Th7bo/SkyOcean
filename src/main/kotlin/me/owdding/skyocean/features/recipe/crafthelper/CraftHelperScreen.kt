@@ -47,9 +47,9 @@ object CraftHelperScreen : SkyOceanScreen("Craft Helper") {
     var currentMainScroll = { 0 }
     const val SPACER = 5
 
-    var currentCategory: CraftHelperCategory? = null
+    var currentCategory: CraftHelperCategory?
+        get() = CraftHelperStorage.activeCategory
         set(value) {
-            field = value
             CraftHelperStorage.activeCategory = value
         }
 

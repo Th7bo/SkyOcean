@@ -15,9 +15,16 @@ import java.util.UUID
 
 @LateInitModule
 object CraftHelperStorage {
+    private const val ALL_CATEGORY_KEY = "all"
+
     val defaultCategory = CraftHelperCategory(UUID(0, 0), "Uncategorized")
 
-    var activeCategory: CraftHelperCategory? = null
+    var activeCategory: CraftHelperCategory?
+        get() = activeCategoryStorage.get()?.let(::resolveCategoryKey)
+        set(value) {
+            activeCategoryStorage.set(value?.identifier?.toString() ?: ALL_CATEGORY_KEY)
+            activeCategoryStorage.save()
+        }
 
     private fun wrapInList(codec: Codec<CraftHelperRecipe>): Codec<List<CraftHelperRecipe>> =
         codec.xmap(
@@ -62,6 +69,17 @@ object CraftHelperStorage {
             0 -> SkyOceanCodecs.CraftHelperCategoryCodec.codec().listOf()
                 .xmap({ it.toMutableList() }, { it.toList() })
             else -> CodecHelpers.unit { mutableListOf() }
+        }
+    }
+
+    private val activeCategoryStorage = ProfileStorage<String>(
+        0,
+        { ALL_CATEGORY_KEY },
+        "craft_helper_active_category",
+    ) { version ->
+        when (version) {
+            0 -> Codec.STRING
+            else -> CodecHelpers.unit { ALL_CATEGORY_KEY }
         }
     }
 
@@ -188,6 +206,10 @@ object CraftHelperStorage {
     }
 
     fun deleteCategory(category: CraftHelperCategory) {
+        if (activeCategory?.identifier == category.identifier) {
+            activeCategory = null
+        }
+
         val cats = categories.toMutableList()
         cats.removeIf { it.identifier == category.identifier }
         categoryStorage.set(cats)
@@ -196,5 +218,11 @@ object CraftHelperStorage {
         storage.set(recipes)
         save()
         saveCategories()
+    }
+
+    private fun resolveCategoryKey(key: String): CraftHelperCategory? = when (key) {
+        ALL_CATEGORY_KEY -> null
+        defaultCategory.identifier.toString() -> defaultCategory
+        else -> categories.firstOrNull { it.identifier.toString() == key }
     }
 }

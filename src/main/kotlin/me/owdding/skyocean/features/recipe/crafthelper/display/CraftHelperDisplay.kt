@@ -3,10 +3,10 @@ package me.owdding.skyocean.features.recipe.crafthelper.display
 import earth.terrarium.olympus.client.utils.ListenableState
 import me.owdding.lib.builder.LayoutFactory
 import me.owdding.lib.builder.MIDDLE
-import me.owdding.lib.compat.REIRenderOverlayEvent
 import me.owdding.lib.displays.Displays
 import me.owdding.lib.displays.asButtonLeft
 import me.owdding.lib.displays.withPadding
+import me.owdding.lib.events.ItemListEvent
 import me.owdding.lib.layouts.BackgroundWidget
 import me.owdding.lib.layouts.asWidget
 import me.owdding.lib.utils.MeowddingLogger
@@ -121,7 +121,7 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
     }
 
     @Subscription
-    fun onREI(event: REIRenderOverlayEvent) {
+    fun onItemListRender(event: ItemListEvent.RegisterExclusionZones) {
         craftHelperLayout?.let {
             event.register(it.x, it.y, it.width, it.height)
         }

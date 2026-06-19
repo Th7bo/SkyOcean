@@ -17,6 +17,7 @@ import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperTree
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperParentNode
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperRecipeNode
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperNode
+import me.owdding.skyocean.features.recipe.crafthelper.eval.CraftHelperEtaTracker
 import me.owdding.skyocean.features.recipe.crafthelper.eval.ItemTracker
 import me.owdding.skyocean.features.recipe.crafthelper.eval.TrackedItem
 import me.owdding.skyocean.utils.Utils.not
@@ -365,6 +366,13 @@ class WidgetBuilder(val includeParentOverride: Boolean? = null, val refreshCallb
             append(this@WidgetBuilder.name())
             append(" ")
             append(this@WidgetBuilder.getIcons())
+
+            if (CraftHelperConfig.showEta && !state.hasChildren && !state.isDone()) {
+                CraftHelperEtaTracker.getEta(state.ingredient.serialize(), needed - available)?.let { eta ->
+                    append(" ")
+                    append("(${eta.toReadableTime()})") { this.color = TextColor.AQUA }
+                }
+            }
         },
     )
 

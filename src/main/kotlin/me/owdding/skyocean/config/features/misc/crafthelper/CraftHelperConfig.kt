@@ -61,6 +61,10 @@ object CraftHelperConfig : CategoryKt("crafthelper") {
         translation = "skyocean.config.misc.crafthelper.enable_hud_overlay"
     }
 
+    var showEta by boolean(true) {
+        translation = "skyocean.config.misc.crafthelper.show_eta"
+    }
+
     var overlayBackground by boolean(false) {
         translation = "skyocean.config.misc.crafthelper.overlay_background"
     }

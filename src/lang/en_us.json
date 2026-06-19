@@ -654,6 +654,10 @@
             "@value": "Enable overlay background",
             "desc": "Adds a background behind the overlay to make it more readable."
           },
+          "show_eta": {
+            "@value": "Show gathering ETA",
+            "desc": "Shows an estimated time until an ingredient is fully gathered while you actively collect it (e.g. mining gold)."
+          },
           "transformers": {
             "@value": "Tree transformers",
             "desc": "The following settings will alter the recipe tree in different ways, letting you customize the appearance and complexity.",

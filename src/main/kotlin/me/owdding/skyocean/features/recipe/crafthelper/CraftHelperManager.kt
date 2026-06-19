@@ -14,7 +14,9 @@ import me.owdding.skyocean.data.profile.CraftHelperStorage.setSelected
 import me.owdding.skyocean.features.item.search.highlight.ItemHighlighter
 import me.owdding.skyocean.features.item.search.search.ReferenceItemFilter
 import me.owdding.skyocean.features.item.sources.ItemSources
+import me.owdding.skyocean.features.recipe.crafthelper.eval.CraftHelperEtaTracker
 import me.owdding.skyocean.features.recipe.crafthelper.eval.ItemTracker
+import me.owdding.skyocean.features.recipe.serialize
 import me.owdding.skyocean.features.recipe.crafthelper.views.CraftHelperState
 import me.owdding.skyocean.features.recipe.crafthelper.views.SimpleRecipeView
 import me.owdding.skyocean.features.recipe.crafthelper.visitors.CompactedResourceCutoffTreeTransformer
@@ -116,6 +118,13 @@ object CraftHelperManager {
         }
 
         lastEvaluatedRoots.set(roots)
+
+        CraftHelperEtaTracker.update(
+            roots.flatMap { it.collect() }
+                .filterNot { it.hasChildren }
+                .groupBy { it.ingredient.serialize() }
+                .mapValues { (_, states) -> states.sumOf { it.amount } },
+        )
 
         val allChildrenDone = roots.isNotEmpty() && roots.all { it.childrenDone }
         if (!allChildrenDone) return

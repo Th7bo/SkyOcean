@@ -6,27 +6,43 @@ import tech.thatgravyboat.skyblockapi.api.events.hypixel.ServerChangeEvent
 import tech.thatgravyboat.skyblockapi.utils.extentions.currentInstant
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 import kotlin.time.Instant
 
 /**
- * Tracks the rate at which the player gathers craft helper ingredients and projects an ETA for
- * when an ingredient's requirement will be met.
+ * Tracks how fast the player gathers craft helper ingredients and projects an ETA for when an
+ * ingredient's requirement will be met.
  *
- * A tracker for an ingredient starts collecting data the moment its available amount increases
- * (e.g. mining gold fills the gold sack) and stops - dropping its history so no ETA is shown -
- * when the gathering goes stale ([TIMEOUT] without a gain), the amount drops (the ingredient was
- * consumed/crafted), or the player changes servers/worlds.
+ * The rate is an average - cumulative gains divided by the elapsed time - rather than an
+ * instantaneous slope, which makes it robust to two quirks:
+ *  - Sack update notifications can lag 3-30 seconds, so gains arrive in bursts rather than smoothly.
+ *    Averaging over the whole window means the burst timing doesn't matter.
+ *  - Autocompactors (and crafting/spending) consume a resource the moment it is gathered, so the
+ *    raw amount swings up and down. Decreases are ignored entirely, so they never drag the rate
+ *    negative or reset an otherwise healthy window.
+ *
+ * The window starts on the first increase and ends (no ETA shown) when gathering goes stale
+ * ([TIMEOUT] without a gain) or the player changes servers/worlds.
  */
 @Module
 object CraftHelperEtaTracker {
 
-    private val TIMEOUT = 30.seconds
-    private const val MAX_SAMPLES = 30
+    // Must comfortably exceed the largest expected gap between two sack updates (~30s), otherwise
+    // we'd disarm mid-gathering while waiting on a delayed notification.
+    private val TIMEOUT = 45.seconds
+    private val MIN_WINDOW = 2.seconds
 
     private class Tracker(now: Instant, amount: Int) {
-        val samples = ArrayDeque<Pair<Instant, Int>>().apply { addLast(now to amount) }
         var lastAmount: Int = amount
+        var armed: Boolean = false
+        var windowStart: Instant = now
+        var gathered: Long = 0
         var lastIncrease: Instant = now
+
+        fun disarm() {
+            armed = false
+            gathered = 0
+        }
     }
 
     private val trackers = mutableMapOf<String, Tracker>()
@@ -41,55 +57,43 @@ object CraftHelperEtaTracker {
 
         for ((id, amount) in amounts) {
             val tracker = trackers.getOrPut(id) { Tracker(now, amount) }
+            val diff = amount - tracker.lastAmount
 
             when {
-                amount > tracker.lastAmount -> {
+                // The first increase arms the tracker and starts the clock; only later increases
+                // count toward the rate. The first delta is dropped because the resource it
+                // represents was gathered before it landed (the sack update can be seconds late),
+                // so counting it would have no honest elapsed time behind it.
+                diff > 0 && !tracker.armed -> {
+                    tracker.armed = true
+                    tracker.windowStart = now
+                    tracker.gathered = 0
                     tracker.lastIncrease = now
-                    tracker.samples.addLast(now to amount)
-                    while (tracker.samples.size > MAX_SAMPLES) tracker.samples.removeFirst()
                 }
-                // Amount dropped (consumed, crafted, withdrawn): restart from the new baseline.
-                amount < tracker.lastAmount -> tracker.restart(now, amount)
-                // No gains for a while: drop stale history so we stop projecting an ETA.
-                now - tracker.lastIncrease >= TIMEOUT -> tracker.restart(now, amount)
+                diff > 0 -> {
+                    tracker.gathered += diff
+                    tracker.lastIncrease = now
+                }
+                // Decreases are consumption (autocompactor, crafting, spending), not gathering.
+                diff < 0 -> Unit
             }
+
+            // No gains for a while: the player stopped gathering, so drop the stale window.
+            if (tracker.armed && now - tracker.lastIncrease >= TIMEOUT) tracker.disarm()
+
             tracker.lastAmount = amount
         }
-    }
-
-    private fun Tracker.restart(now: Instant, amount: Int) {
-        samples.clear()
-        samples.addLast(now to amount)
-        lastIncrease = now
     }
 
     /** Returns the projected time to gather [remaining] more of [id], or null if not estimable. */
     fun getEta(id: String, remaining: Int): Duration? {
         if (remaining <= 0) return null
-        val tracker = trackers[id] ?: return null
-        if (currentInstant() - tracker.lastIncrease >= TIMEOUT) return null
-        val rate = tracker.samples.ratePerSecond() ?: return null
+        val tracker = trackers[id]?.takeIf { it.armed && it.gathered > 0 } ?: return null
+        val elapsed = currentInstant() - tracker.windowStart
+        if (elapsed < MIN_WINDOW) return null
+        val rate = tracker.gathered / elapsed.toDouble(DurationUnit.SECONDS) // items per second
         if (rate <= 0.0) return null
         return (remaining / rate).seconds
-    }
-
-    /** Least squares slope of amount over time, in items per second. */
-    private fun List<Pair<Instant, Int>>.ratePerSecond(): Double? {
-        if (size < 2) return null
-        val start = first().first
-        val points = map { (time, amount) -> (time - start).inWholeMilliseconds / 1000.0 to amount.toDouble() }
-
-        val avgX = points.map { it.first }.average()
-        val avgY = points.map { it.second }.average()
-
-        var above = 0.0
-        var below = 0.0
-        for ((x, y) in points) {
-            above += (x - avgX) * (y - avgY)
-            below += (x - avgX) * (x - avgX)
-        }
-        if (below == 0.0) return null
-        return above / below
     }
 
     fun clear() = trackers.clear()

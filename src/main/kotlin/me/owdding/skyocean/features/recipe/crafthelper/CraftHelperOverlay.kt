@@ -116,7 +116,6 @@ object CraftHelperOverlay : SkyOceanOverlay() {
         }
 
         graphics.translated(padding, padding) {
-            //~ if >= 26.1 'render(' -> 'extractRenderState('
             layout?.visitWidgets { it.extractRenderState(graphics, -1, -1, partialTicks) }
         }
     }

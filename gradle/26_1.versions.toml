@@ -19,3 +19,7 @@ resourceful-lib = { module = "com.teamresourceful.resourcefullib:resourcefullib-
 resourceful-config = { module = "com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-26.1", version.ref = "resourceful-config" }
 olympus = { module = "earth.terrarium.olympus:olympus-fabric-26.1", version.ref = "olympus" }
 placeholders = { module = "eu.pb4:placeholder-api", version.ref = "placeholders" }
+
+# Recipe viewer used by the SkyBlock Enhanced modpack (provides SkyBlock recipes via skyrecipes).
+# Compile-only: used by the craft-helper RRV compat (me.owdding.skyocean.compat.rrv / mixins.compat.rrv).
+reliable-recipe-viewer = { module = "maven.modrinth:rrv", version = "8.4.0+26.1.2-fabric" }

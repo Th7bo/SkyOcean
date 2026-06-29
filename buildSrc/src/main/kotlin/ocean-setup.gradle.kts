@@ -305,4 +305,5 @@ dependencies {
     detektPlugins(versionedCatalog["detekt.ktlintWrapper"])
 
     versionedCatalog.getOrNull("rei.api")?.let { maybeModCompileOnly(it) }
+    versionedCatalog.getOrNull("reliable.recipe.viewer")?.let { maybeModCompileOnly(it) }
 }

@@ -5,6 +5,7 @@ import me.owdding.ktmodules.Module
 import me.owdding.lib.events.FinishRepoLoadingEvent
 import me.owdding.lib.utils.MeowddingLogger
 import me.owdding.skyocean.SkyOcean
+import me.owdding.skyocean.generated.SkyOceanCodecs
 import me.owdding.skyocean.utils.Utils.loadRemoteRepoData
 import me.owdding.skyocean.utils.extensions.runCatching
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
@@ -35,8 +36,8 @@ class RemoteRepoDelegate<T : Any>(private val path: String, private val loader: 
             instances.forEach { it.update() }
         }
 
-        internal inline fun <reified T : Any> load(path: String) = RemoteRepoDelegate(path) { loadRemoteRepoData<T>(it) }
-        internal inline fun <reified T : Any> load(path: String, codec: Codec<T>) = RemoteRepoDelegate(path) { loadRemoteRepoData(it, codec) }
+        internal inline fun <reified T : Any> load(path: String) = load(path, SkyOceanCodecs.getCodec<T>())
+        internal fun <T : Any> load(path: String, codec: Codec<T>) = RemoteRepoDelegate(path) { loadRemoteRepoData(it, codec) }
     }
 }
 

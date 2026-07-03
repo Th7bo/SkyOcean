@@ -186,13 +186,13 @@ object Utils {
     internal inline fun <reified T : Any> loadRemoteRepoData(file: String): T? = loadRemoteRepoData<T, T>(file) { it }
 
     internal inline fun <reified T : Any, B : Any> loadRemoteRepoData(file: String, modifier: (Codec<T>) -> Codec<B>): B? = runCatching {
-        return loadFromRemoteRepo<JsonElement>(file).toDataOrThrow(SkyOceanCodecs.getCodec<T>().let(modifier))
+        loadFromRemoteRepo<JsonElement>(file).toDataOrThrow(SkyOceanCodecs.getCodec<T>().let(modifier))
     }.onFailure {
         SkyOcean.error("Failed to load '$file' from remote repo!", it)
     }.getOrNull()
 
     internal inline fun <B : Any> loadRemoteRepoData(file: String, supplier: () -> Codec<B>): B? = runCatching {
-        return loadFromRemoteRepo<JsonElement>(file).toDataOrThrow(supplier())
+        loadFromRemoteRepo<JsonElement>(file).toDataOrThrow(supplier())
     }.onFailure {
         SkyOcean.error("Failed to load '$file' from remote repo!", it)
     }.getOrNull()

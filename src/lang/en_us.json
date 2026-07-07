@@ -492,6 +492,10 @@
           "@value": "Quick Join Button",
           "desc": "Quickly Join a Server with one less button click."
         },
+        "quickJoinText": {
+          "@value": "The Button Text for Quick Join",
+          "desc": "The text shown on the button, use {ip} for the ip."
+        },
         "quickJoinIp": {
           "@value": "The IP for Quick Join",
           "desc": "Customize what Server to quickly join."
@@ -1691,6 +1695,17 @@
         "edit": {
           "@value": "Edit hotkeys",
           "desc": "Opens the hotkey edit screen."
+        }
+      },
+      "text_replacements": {
+        "@value": "Text Replacements",
+        "enabled": {
+          "@value": "Enabled",
+          "desc": "Global toggle for all text replacements, regardless of their respective toggles."
+        },
+        "outside_skyblock": {
+          "@value": "Outside SkyBlock",
+          "desc": "Allows text replacements to be active outside of skyblock."
         }
       }
     },

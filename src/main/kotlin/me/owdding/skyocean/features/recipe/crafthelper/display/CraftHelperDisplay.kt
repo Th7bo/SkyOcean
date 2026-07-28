@@ -12,6 +12,7 @@ import me.owdding.lib.layouts.asWidget
 import me.owdding.lib.utils.MeowddingLogger
 import me.owdding.lib.utils.MeowddingLogger.Companion.featureLogger
 import me.owdding.skyocean.SkyOcean
+import me.owdding.skyocean.compat.CatharsisSupport
 import me.owdding.skyocean.config.features.misc.crafthelper.CraftHelperConfig
 import me.owdding.skyocean.data.profile.CraftHelperStorage
 import me.owdding.skyocean.features.item.sources.ItemSources
@@ -64,6 +65,7 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
     fun onScreenInit(event: ScreenInitializedEvent) {
         if (!CraftHelperConfig.enabled && !ignoreChecks) return
         if (!LocationAPI.isOnSkyBlock && !ignoreChecks) return
+        if (CatharsisSupport.isModElementHidden("skyocean:crafthelper")) return
 
         val screen = event.screen as? AbstractContainerScreen<*> ?: return
 
@@ -271,10 +273,11 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
 
             horizontal(5, MIDDLE) {
                 val item = ExtraDisplays.inventoryBackground(1, 1, Displays.item(output.item, showTooltip = true).withPadding(2))
+                val titleWidth = max(0, contentWidth - item.getWidth() - 10)
                 display(item)
                 vertical(alignment = MIDDLE) {
-                    spacer(max(0, contentWidth - item.getWidth() - 10))
-                    display(Displays.component(output.itemName))
+                    spacer(titleWidth)
+                    display(Displays.fixed(titleWidth, McFont.height, Displays.component(output.itemName)))
                     horizontal {
                         widget(
                             Displays.component(

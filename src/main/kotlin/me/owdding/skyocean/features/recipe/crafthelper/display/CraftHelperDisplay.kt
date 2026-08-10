@@ -17,8 +17,8 @@ import me.owdding.skyocean.config.features.misc.crafthelper.CraftHelperConfig
 import me.owdding.skyocean.data.profile.CraftHelperStorage
 import me.owdding.skyocean.features.item.sources.ItemSources
 import me.owdding.skyocean.features.recipe.ItemLikeIngredient
-import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperTree
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperManager
+import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperTree
 import me.owdding.skyocean.features.recipe.crafthelper.eval.ItemTracker
 import me.owdding.skyocean.features.recipe.crafthelper.views.CraftHelperState
 import me.owdding.skyocean.features.recipe.crafthelper.views.SimpleRecipeView
@@ -277,7 +277,11 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
                 display(item)
                 vertical(alignment = MIDDLE) {
                     spacer(titleWidth)
-                    display(Displays.fixed(titleWidth, McFont.height, Displays.component(output.itemName)))
+                    val nameComponent = Displays.component(output.itemName)
+                    display(
+                        if (nameComponent.getWidth() > titleWidth) Displays.fixedWidth(nameComponent, titleWidth)
+                        else nameComponent,
+                    )
                     horizontal {
                         widget(
                             Displays.component(

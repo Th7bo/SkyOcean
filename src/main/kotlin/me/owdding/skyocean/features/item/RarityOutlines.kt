@@ -27,9 +27,7 @@ import net.minecraft.client.renderer.item.ItemStackRenderState
 import net.minecraft.client.renderer.state.gui.GuiItemRenderState
 import net.minecraft.util.ARGB
 import net.minecraft.util.Util
-import net.minecraft.world.item.ItemDisplayContext
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.level.Level
 import org.lwjgl.system.MemoryStack
 import tech.thatgravyboat.skyblockapi.api.datatype.DataTypes
 import tech.thatgravyboat.skyblockapi.api.datatype.getData
@@ -59,7 +57,7 @@ object RarityOutlines {
     fun Int?.asOptionalInt(): OptionalInt = OptionalInt.of(this ?: return OptionalInt.empty())
 
     @JvmStatic
-    fun attachData(output: ItemStackRenderState, item: ItemStack, displayContext: ItemDisplayContext, level: Level) {
+    fun attachData(output: ItemStackRenderState, item: ItemStack) {
         val modifiedRarity = RarityOutlinesConfig.color(item.getData(DataTypes.RARITY))
         val baseRarity = RarityOutlinesConfig.color(item.getRealRarity())
         modifiedRarity?.let { output.setData(RARITY, it) }

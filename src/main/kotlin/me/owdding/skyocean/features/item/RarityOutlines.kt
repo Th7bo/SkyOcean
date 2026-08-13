@@ -63,7 +63,7 @@ object RarityOutlines {
         modifiedRarity?.let { output.setData(RARITY, it) }
 
         if (RarityOutlinesConfig.baseRarityGlint && baseRarity != modifiedRarity) {
-            modifiedRarity?.let { output.setData(BASE_RARITY, it) }
+            baseRarity?.let { output.setData(BASE_RARITY, it) }
         }
     }
 

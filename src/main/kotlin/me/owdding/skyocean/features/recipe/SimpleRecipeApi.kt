@@ -3,6 +3,7 @@ package me.owdding.skyocean.features.recipe
 import me.owdding.lib.utils.MeowddingLogger
 import me.owdding.lib.utils.MeowddingLogger.Companion.featureLogger
 import me.owdding.skyocean.SkyOcean
+import me.owdding.skyocean.features.recipe.mutation.MutationRecipe
 import me.owdding.skyocean.generated.CodecUtils
 import me.owdding.skyocean.generated.SkyOceanCodecs
 import me.owdding.skyocean.utils.LateInitLoader
@@ -68,6 +69,11 @@ object SimpleRecipeApi : MeowddingLogger by SkyOcean.featureLogger(), LateInitLo
         }
 
         debug("Loaded ${recipes.size} Recipes from repo api")
+        runCatching("Loading greenhouse mutations from repo!") {
+            val mutations = MutationRecipe.loadAll()
+            recipes.addAll(mutations)
+            debug("Loaded ${mutations.size} greenhouse mutations, new total is ${recipes.size}")
+        }
         runCatching("Loading extra recipes from repo!") {
             val extra = Utils.loadRemoteRepoData("skyocean/recipes", SkyOceanCodecs.CustomRecipeCodec.codec().listOf())
             recipes.addAll(extra)

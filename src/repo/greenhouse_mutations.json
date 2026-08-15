@@ -1,0 +1,674 @@
+{
+  "mutations": {
+    "PHANTOMLEAF": {
+      "surface": "Soul Sand",
+      "water": false,
+      "stages": 15,
+      "analyze_cost": 3000000,
+      "analyze_copper": 1500,
+      "ingredients": [
+        {
+          "item": "CHORUS_FRUIT",
+          "amount": 4
+        },
+        {
+          "item": "SHELLFRUIT",
+          "amount": 4
+        }
+      ]
+    },
+    "TIMESTALK": {
+      "surface": "End Stone",
+      "water": true,
+      "stages": 14,
+      "analyze_cost": 19000000,
+      "analyze_copper": 9500,
+      "ingredients": [
+        {
+          "item": "STOPLIGHT_PETAL",
+          "amount": 4
+        },
+        {
+          "item": "CHORUS_FRUIT",
+          "amount": 2
+        },
+        {
+          "item": "SHELLFRUIT",
+          "amount": 2
+        }
+      ]
+    },
+    "GODSEED": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 40,
+      "analyze_cost": 1000000,
+      "analyze_copper": 500,
+      "ingredients": [],
+      "notes": [
+        "Every positive crop effect must be present at its highest tier",
+        "Yield and Farming XP boost at +30%, water retention at +100%"
+      ]
+    },
+    "JERRYFLOWER": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 10,
+      "analyze_cost": 20000,
+      "analyze_copper": 10,
+      "ingredients": [
+        {
+          "item": "FERTILIZED_JERRYSEED",
+          "amount": 1
+        }
+      ]
+    },
+    "DEVOURER": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 16,
+      "analyze_cost": 10000000,
+      "analyze_copper": 5000,
+      "ingredients": [
+        {
+          "item": "PUFFERCLOUD",
+          "amount": 4
+        },
+        {
+          "item": "ZOMBUD",
+          "amount": 4
+        }
+      ]
+    },
+    "GLASSCORN": {
+      "surface": "Sand",
+      "water": true,
+      "stages": 9,
+      "analyze_cost": 4000000,
+      "analyze_copper": 2000,
+      "ingredients": [
+        {
+          "item": "STARTLEVINE",
+          "amount": 6
+        },
+        {
+          "item": "CHLORONITE",
+          "amount": 6
+        }
+      ]
+    },
+    "ALL_IN_ALOE": {
+      "surface": "Sand",
+      "water": false,
+      "stages": 27,
+      "analyze_cost": 4600000,
+      "analyze_copper": 2300,
+      "ingredients": [
+        {
+          "item": "MAGIC_JELLYBEAN",
+          "amount": 6
+        },
+        {
+          "item": "PLANTBOY_ADVANCE",
+          "amount": 2
+        }
+      ]
+    },
+    "ZOMBUD": {
+      "surface": "Soul Sand",
+      "water": false,
+      "stages": 16,
+      "analyze_cost": 1000000,
+      "analyze_copper": 500,
+      "ingredients": [
+        {
+          "item": "DEAD_PLANT",
+          "amount": 4
+        },
+        {
+          "item": "CINDERSHADE",
+          "amount": 2
+        },
+        {
+          "item": "FLESHTRAP",
+          "amount": 2
+        }
+      ]
+    },
+    "THUNDERLING": {
+      "surface": "Farmland",
+      "water": false,
+      "stages": 16,
+      "analyze_cost": 800000,
+      "analyze_copper": 400,
+      "ingredients": [
+        {
+          "item": "SOGGYBUD",
+          "amount": 5
+        },
+        {
+          "item": "NOCTILUME",
+          "amount": 3
+        }
+      ]
+    },
+    "TURTLELLINI": {
+      "surface": "Farmland",
+      "water": false,
+      "stages": 0,
+      "analyze_cost": 240000,
+      "analyze_copper": 120,
+      "ingredients": [
+        {
+          "item": "SOGGYBUD",
+          "amount": 4
+        },
+        {
+          "item": "CHOCONUT",
+          "amount": 4
+        }
+      ]
+    },
+    "STARTLEVINE": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 12,
+      "analyze_cost": 500000,
+      "analyze_copper": 250,
+      "ingredients": [
+        {
+          "item": "BLASTBERRY",
+          "amount": 4
+        },
+        {
+          "item": "CHEESEBITE",
+          "amount": 4
+        }
+      ]
+    },
+    "STOPLIGHT_PETAL": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 12,
+      "analyze_cost": 4000000,
+      "analyze_copper": 2000,
+      "ingredients": [
+        {
+          "item": "SNOOZLING",
+          "amount": 4
+        },
+        {
+          "item": "NOCTILUME",
+          "amount": 4
+        }
+      ]
+    },
+    "PUFFERCLOUD": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 14,
+      "analyze_cost": 1000000,
+      "analyze_copper": 500,
+      "ingredients": [
+        {
+          "item": "SNOOZLING",
+          "amount": 2
+        },
+        {
+          "item": "DO_NOT_EAT_SHROOM",
+          "amount": 6
+        }
+      ]
+    },
+    "SHELLFRUIT": {
+      "surface": "Farmland",
+      "water": false,
+      "stages": 0,
+      "analyze_cost": 500000,
+      "analyze_copper": 250,
+      "ingredients": [],
+      "notes": [
+        "Explode adjacent Turtlellini with a Blastberry"
+      ]
+    },
+    "CHORUS_FRUIT": {
+      "surface": "End Stone",
+      "water": false,
+      "stages": 12,
+      "analyze_cost": 600000,
+      "analyze_copper": 300,
+      "ingredients": [
+        {
+          "item": "CHLORONITE",
+          "amount": 5
+        },
+        {
+          "item": "MAGIC_JELLYBEAN",
+          "amount": 3
+        }
+      ]
+    },
+    "PLANTBOY_ADVANCE": {
+      "surface": "Farmland",
+      "water": false,
+      "stages": 12,
+      "analyze_cost": 700000,
+      "analyze_copper": 350,
+      "ingredients": [
+        {
+          "item": "SNOOZLING",
+          "amount": 6
+        },
+        {
+          "item": "THUNDERLING",
+          "amount": 6
+        }
+      ]
+    },
+    "SNOOZLING": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 20,
+      "analyze_cost": 600000,
+      "analyze_copper": 300,
+      "ingredients": [
+        {
+          "item": "CREAMBLOOM",
+          "amount": 4
+        },
+        {
+          "item": "DUSTGRAIN",
+          "amount": 3
+        },
+        {
+          "item": "WITHERBLOOM",
+          "amount": 3
+        },
+        {
+          "item": "DUSKBLOOM",
+          "amount": 3
+        },
+        {
+          "item": "THORNSHADE",
+          "amount": 3
+        }
+      ]
+    },
+    "SOGGYBUD": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 10,
+      "analyze_cost": 60000,
+      "analyze_copper": 30,
+      "ingredients": [
+        {
+          "item": "MELON_SEEDS",
+          "amount": 2
+        },
+        {
+          "item": "GLOOMGOURD",
+          "amount": 2
+        }
+      ]
+    },
+    "MAGIC_JELLYBEAN": {
+      "surface": "Sand",
+      "water": true,
+      "stages": 120,
+      "analyze_cost": 160000,
+      "analyze_copper": 80,
+      "ingredients": [
+        {
+          "item": "SUGAR_CANE",
+          "amount": 5
+        },
+        {
+          "item": "DUSKBLOOM",
+          "amount": 3
+        }
+      ]
+    },
+    "NOCTILUME": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 4,
+      "analyze_cost": 300000,
+      "analyze_copper": 150,
+      "ingredients": [
+        {
+          "item": "DUSKBLOOM",
+          "amount": 6
+        },
+        {
+          "item": "LONELILY",
+          "amount": 6
+        }
+      ]
+    },
+    "DO_NOT_EAT_SHROOM": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 8,
+      "analyze_cost": 240000,
+      "analyze_copper": 120,
+      "ingredients": [
+        {
+          "item": "VEILSHROOM",
+          "amount": 4
+        },
+        {
+          "item": "SCOURROOT",
+          "amount": 4
+        }
+      ]
+    },
+    "FLESHTRAP": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 14,
+      "analyze_cost": 360000,
+      "analyze_copper": 180,
+      "ingredients": [
+        {
+          "item": "CINDERSHADE",
+          "amount": 4
+        },
+        {
+          "item": "LONELILY",
+          "amount": 4
+        }
+      ]
+    },
+    "CHEESEBITE": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 10,
+      "analyze_cost": 80000,
+      "analyze_copper": 80,
+      "ingredients": [
+        {
+          "item": "CREAMBLOOM",
+          "amount": 4
+        },
+        {
+          "item": "FERMENTO",
+          "amount": 4
+        }
+      ]
+    },
+    "CHLORONITE": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 10,
+      "analyze_cost": 40000,
+      "analyze_copper": 20,
+      "ingredients": [
+        {
+          "item": "COALROOT",
+          "amount": 6
+        },
+        {
+          "item": "THORNSHADE",
+          "amount": 2
+        }
+      ]
+    },
+    "BLASTBERRY": {
+      "surface": "Sand",
+      "water": true,
+      "stages": 6,
+      "analyze_cost": 240000,
+      "analyze_copper": 120,
+      "ingredients": [
+        {
+          "item": "CHOCOBERRY",
+          "amount": 5
+        },
+        {
+          "item": "ASHWREATH",
+          "amount": 3
+        }
+      ]
+    },
+    "THORNSHADE": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 8,
+      "analyze_cost": 80000,
+      "analyze_copper": 40,
+      "ingredients": [
+        {
+          "item": "WILD_ROSE",
+          "amount": 4
+        },
+        {
+          "item": "VEILSHROOM",
+          "amount": 4
+        }
+      ]
+    },
+    "CREAMBLOOM": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 6,
+      "analyze_cost": 60000,
+      "analyze_copper": 30,
+      "ingredients": [
+        {
+          "item": "CHOCONUT",
+          "amount": 8
+        }
+      ]
+    },
+    "DUSKBLOOM": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 8,
+      "analyze_cost": 80000,
+      "analyze_copper": 40,
+      "ingredients": [
+        {
+          "item": "MOONFLOWER",
+          "amount": 2
+        },
+        {
+          "item": "SHADEVINE",
+          "amount": 2
+        },
+        {
+          "item": "DOUBLE_PLANT",
+          "amount": 2
+        },
+        {
+          "item": "DUSTGRAIN",
+          "amount": 2
+        }
+      ]
+    },
+    "CINDERSHADE": {
+      "surface": "Soul Sand",
+      "water": false,
+      "stages": 8,
+      "analyze_cost": 80000,
+      "analyze_copper": 40,
+      "ingredients": [
+        {
+          "item": "ASHWREATH",
+          "amount": 4
+        },
+        {
+          "item": "WITHERBLOOM",
+          "amount": 4
+        }
+      ]
+    },
+    "COALROOT": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 8,
+      "analyze_cost": 80000,
+      "analyze_copper": 40,
+      "ingredients": [
+        {
+          "item": "SCOURROOT",
+          "amount": 3
+        },
+        {
+          "item": "ASHWREATH",
+          "amount": 5
+        }
+      ]
+    },
+    "CHOCOBERRY": {
+      "surface": "Farmland",
+      "water": true,
+      "stages": 6,
+      "analyze_cost": 60000,
+      "analyze_copper": 30,
+      "ingredients": [
+        {
+          "item": "CHOCONUT",
+          "amount": 6
+        },
+        {
+          "item": "GLOOMGOURD",
+          "amount": 2
+        }
+      ]
+    },
+    "WITHERBLOOM": {
+      "surface": "Soul Sand",
+      "water": false,
+      "stages": 0,
+      "analyze_cost": 40000,
+      "analyze_copper": 20,
+      "ingredients": [
+        {
+          "item": "DEAD_PLANT",
+          "amount": 4
+        }
+      ]
+    },
+    "SHADEVINE": {
+      "surface": "Farmland, Sand",
+      "water": false,
+      "stages": 0,
+      "analyze_cost": 10000,
+      "analyze_copper": 5,
+      "ingredients": [
+        {
+          "item": "CACTUS",
+          "amount": 1
+        },
+        {
+          "item": "SUGAR_CANE",
+          "amount": 1
+        }
+      ]
+    },
+    "VEILSHROOM": {
+      "surface": "Mycelium",
+      "water": false,
+      "stages": 0,
+      "analyze_cost": 10000,
+      "analyze_copper": 5,
+      "ingredients": [
+        {
+          "item": "RED_MUSHROOM",
+          "amount": 1
+        },
+        {
+          "item": "BROWN_MUSHROOM",
+          "amount": 1
+        }
+      ]
+    },
+    "LONELILY": {
+      "surface": "Farmland",
+      "water": false,
+      "stages": 0,
+      "analyze_cost": 50000,
+      "analyze_copper": 25,
+      "ingredients": [],
+      "notes": [
+        "0 adjacent crops"
+      ]
+    },
+    "SCOURROOT": {
+      "surface": "Farmland",
+      "water": false,
+      "stages": 0,
+      "analyze_cost": 10000,
+      "analyze_copper": 5,
+      "ingredients": [
+        {
+          "item": "POTATO_ITEM",
+          "amount": 1
+        },
+        {
+          "item": "CARROT_ITEM",
+          "amount": 1
+        }
+      ]
+    },
+    "DUSTGRAIN": {
+      "surface": "Farmland",
+      "water": false,
+      "stages": 0,
+      "analyze_cost": 10000,
+      "analyze_copper": 5,
+      "ingredients": [
+        {
+          "item": "SEEDS",
+          "amount": 2
+        }
+      ]
+    },
+    "GLOOMGOURD": {
+      "surface": "Farmland",
+      "water": false,
+      "stages": 0,
+      "analyze_cost": 10000,
+      "analyze_copper": 5,
+      "ingredients": [
+        {
+          "item": "PUMPKIN_SEEDS",
+          "amount": 1
+        },
+        {
+          "item": "MELON_SEEDS",
+          "amount": 1
+        }
+      ]
+    },
+    "ASHWREATH": {
+      "surface": "Soul Sand",
+      "water": false,
+      "stages": 0,
+      "analyze_cost": 10000,
+      "analyze_copper": 5,
+      "ingredients": [
+        {
+          "item": "NETHER_STALK",
+          "amount": 2
+        }
+      ],
+      "notes": [
+        "2x Fire"
+      ]
+    },
+    "CHOCONUT": {
+      "surface": "Farmland",
+      "water": false,
+      "stages": 0,
+      "analyze_cost": 10000,
+      "analyze_copper": 5,
+      "ingredients": [
+        {
+          "item": "INK_SACK:3",
+          "amount": 2
+        }
+      ]
+    }
+  }
+}

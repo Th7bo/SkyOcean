@@ -8,5 +8,6 @@ enum class RecipeType(val command: String? = null) {
     SHOP,
     CUSTOM,
     SKY_SHARDS,
+    MUTATION,
     UNKNOWN,
 }

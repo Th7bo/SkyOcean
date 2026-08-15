@@ -20,6 +20,7 @@ import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperNode
 import me.owdding.skyocean.features.recipe.crafthelper.eval.CraftHelperEtaTracker
 import me.owdding.skyocean.features.recipe.crafthelper.eval.ItemTracker
 import me.owdding.skyocean.features.recipe.crafthelper.eval.TrackedItem
+import me.owdding.skyocean.features.recipe.mutation.MutationRecipe
 import me.owdding.skyocean.utils.Utils.not
 import me.owdding.skyocean.utils.chat.ChatUtils.sendWithPrefix
 import me.owdding.skyocean.utils.chat.ComponentIcons
@@ -390,6 +391,7 @@ class WidgetBuilder(val includeParentOverride: Boolean? = null, val refreshCallb
                 RecipeType.UNKNOWN -> SkyOcean.debug("Clicked unknown recipe type for $id")
                 RecipeType.KAT -> Text.of("No preview yet, go to Kat :(").sendWithPrefix()
                 RecipeType.SHOP -> Text.of("No preview for Shop Recipes yet :(").sendWithPrefix()
+                RecipeType.MUTATION -> (MutationRecipe.describe(id) ?: Text.of("No setup known for this mutation :(")).sendWithPrefix()
                 else if state.recipeType.command != null -> McClient.sendClientCommand("${state.recipeType.command} $id")
                 else -> SkyOcean.debug("Clicked recipe type with undefined click behaviour ($id)")
             }

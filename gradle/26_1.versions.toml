@@ -23,3 +23,8 @@ placeholders = { module = "eu.pb4:placeholder-api", version.ref = "placeholders"
 # Recipe viewer used by the SkyBlock Enhanced modpack (provides SkyBlock recipes via skyrecipes).
 # Compile-only: used by the craft-helper RRV compat (me.owdding.skyocean.compat.rrv / mixins.compat.rrv).
 reliable-recipe-viewer = { module = "maven.modrinth:rrv", version = "8.4.0+26.1.2-fabric" }
+
+# Skysoft ships an MC 26.1 and an MC 26.2 build under the same version number, so the Modrinth
+# version id is used instead of "0.1.15" to pin the right one.
+# Compile-only: used by the craft-helper Skysoft compat (me.owdding.skyocean.compat.skysoft / mixins.compat.skysoft).
+skysoft = { module = "maven.modrinth:skysoft", version = "XA4I8ROD" }

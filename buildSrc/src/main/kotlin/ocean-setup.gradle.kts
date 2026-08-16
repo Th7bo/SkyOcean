@@ -307,4 +307,5 @@ dependencies {
 
     versionedCatalog.getOrNull("rei.api")?.let { maybeModCompileOnly(it) }
     versionedCatalog.getOrNull("reliable.recipe.viewer")?.let { maybeModCompileOnly(it) }
+    versionedCatalog.getOrNull("skysoft")?.let { maybeModCompileOnly(it) }
 }

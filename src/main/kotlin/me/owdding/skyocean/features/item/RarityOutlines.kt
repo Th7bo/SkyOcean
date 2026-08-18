@@ -158,11 +158,13 @@ object RarityOutlines {
         private var buffer: GpuBuffer? = null
 
         fun update(width: Int, slotSize: Int, guiScale: Int) {
-            if (buffer == null) buffer = RenderSystem.getDevice().createBuffer(
+            if (!RarityOutlinesConfig.enabled) return
+
+            val buffer = this.buffer?.takeUnless { it.isClosed } ?: RenderSystem.getDevice().createBuffer(
                 { "SkyOcean Rarity UBO" },
                 GpuBuffer.USAGE_UNIFORM or GpuBuffer.USAGE_COPY_DST,
                 UBO_SIZE.toLong(),
-            )
+            ).also { this.buffer = it }
             MemoryStack.stackPush().use {
                 val data = Std140Builder.onStack(it, UBO_SIZE)
                     .putFloat(width.toFloat())
@@ -174,11 +176,17 @@ object RarityOutlines {
                     .putInt(RarityOutlinesConfig.kernelType)
                     .putInt(guiScale)
                     .get()
-                RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer!!.slice(), data)
+                RenderSystem.getDevice().createCommandEncoder().writeToBuffer(buffer.slice(), data)
             }
         }
 
         @JvmStatic
-        fun getGpuBuffer(): GpuBuffer? = buffer
+        fun close() {
+            buffer?.close()
+            buffer = null
+        }
+
+        @JvmStatic
+        fun getGpuBuffer(): GpuBuffer? = buffer?.takeUnless { it.isClosed }
     }
 }

@@ -66,10 +66,7 @@ public class GuiRendererMixin {
         at = @At("TAIL")
     )
     private void onClose(CallbackInfo ci) {
-        var buffer = RarityOutlines.Buffer.getGpuBuffer();
-        if (buffer != null) {
-            buffer.close();
-        }
+        RarityOutlines.Buffer.close();
     }
 }
 //~}

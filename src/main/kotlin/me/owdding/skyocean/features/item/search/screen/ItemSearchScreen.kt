@@ -21,6 +21,7 @@ import me.owdding.lib.extensions.shorten
 import me.owdding.lib.layouts.ScalableWidget
 import me.owdding.lib.layouts.withPadding
 import me.owdding.skyocean.config.features.misc.MiscConfig
+import me.owdding.skyocean.features.item.search.MuseumDonationFilter
 import me.owdding.skyocean.features.item.search.highlight.ItemHighlighter
 import me.owdding.skyocean.features.item.search.matcher.ItemMatcher
 import me.owdding.skyocean.features.item.search.search.ReferenceItemFilter
@@ -36,8 +37,10 @@ import me.owdding.skyocean.utils.rendering.ExtraDisplays
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.layouts.Layout
+import net.minecraft.network.chat.Component
 import net.minecraft.util.ARGB
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import tech.thatgravyboat.skyblockapi.api.location.SkyBlockIsland
 import tech.thatgravyboat.skyblockapi.helpers.McClient
 import tech.thatgravyboat.skyblockapi.helpers.McFont
@@ -54,6 +57,7 @@ object ItemSearchScreen : SkyOceanScreen() {
     val ascending: ListenableState<Boolean> = ListenableState.of(true)
     var search: String? = null
     var category: SearchCategory = SearchCategory.ALL
+    var onlyNotDonated: Boolean = false
     val currentWidgets = mutableListOf<AbstractWidget>()
 
     val widgetWidth get() = (width / 3).coerceAtLeast(100) + 50
@@ -70,14 +74,16 @@ object ItemSearchScreen : SkyOceanScreen() {
             this.state.set("")
         }
         this.category = SearchCategory.ALL
+        this.onlyNotDonated = false
         this.requireRebuild = true
         items.clear()
     }
 
     fun rebuildItems() {
         items.clear()
+        val sources = ItemSources.getAllItems().let { if (onlyNotDonated) MuseumDonationFilter.filter(it) else it }
         items.addAll(
-            ItemSources.getAllItems().fold(mutableListOf()) { list, item ->
+            sources.fold(mutableListOf()) { list, item ->
                 val (itemStack) = item
 
                 list.find { ItemMatcher.compare(it.itemStack, itemStack) }?.let {
@@ -223,11 +229,43 @@ object ItemSearchScreen : SkyOceanScreen() {
                 }
                 widget(button)
             }
+            spacer(height = 4)
+            widget(createNotDonatedToggle())
         }.apply {
             setPosition(body.x - 20, body.y + 26)
             applyLayout()
         }
         addItems()
+    }
+
+    private fun createNotDonatedToggle(): Button = Button().apply {
+        val display = Displays.item(Items.ITEM_FRAME.defaultInstance, 16, 16).withPadding(2)
+
+        val selected = WidgetRenderers.sprite<Button>(UIConstants.PRIMARY_BUTTON)
+        val normal = WidgetRenderers.sprite<Button>(UIConstants.BUTTON)
+
+        withRenderer(
+            WidgetRenderers.layered(
+                { graphics, widget, ticks ->
+                    (if (onlyNotDonated) selected else normal).render(graphics, widget, ticks)
+                },
+                DisplayWidget.displayRenderer(display),
+            ),
+        )
+        withTooltip(notDonatedTooltip())
+        setSize(20, 20)
+        withTexture(null)
+        withCallback {
+            onlyNotDonated = !onlyNotDonated
+            rebuildItems()
+            addItems()
+        }
+    }
+
+    private fun notDonatedTooltip(): Component {
+        val tooltip = Text.translatable("skyocean.screens.item_search.not_donated")
+        if (MuseumDonationFilter.hasData) return tooltip
+        return tooltip.append("\n").append(Text.translatable("skyocean.screens.item_search.not_donated.no_data") { this.color = TextColor.RED })
     }
 
     override fun setInitialFocus() {

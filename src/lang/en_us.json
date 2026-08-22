@@ -1943,6 +1943,10 @@
           "amount": "Amount",
           "price": "Price",
           "rarity": "Rarity"
+        },
+        "not_donated": {
+          "@value": "Not Donated to the Museum",
+          "no_data": "Open your museum once to load your donations!"
         }
       }
     },

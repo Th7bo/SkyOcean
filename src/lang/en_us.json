@@ -1946,7 +1946,7 @@
         },
         "not_donated": {
           "@value": "Not Donated to the Museum",
-          "no_data": "Open your museum once to load your donations!"
+          "hint": "Based on the museum data SkyOcean has cached, open your museum to refresh it."
         }
       }
     },

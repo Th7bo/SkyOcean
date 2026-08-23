@@ -262,11 +262,9 @@ object ItemSearchScreen : SkyOceanScreen() {
         }
     }
 
-    private fun notDonatedTooltip(): Component {
-        val tooltip = Text.translatable("skyocean.screens.item_search.not_donated")
-        if (MuseumDonationFilter.hasData) return tooltip
-        return tooltip.append("\n").append(Text.translatable("skyocean.screens.item_search.not_donated.no_data") { this.color = TextColor.RED })
-    }
+    private fun notDonatedTooltip(): Component = Text.translatable("skyocean.screens.item_search.not_donated")
+        .append("\n")
+        .append(Text.translatable("skyocean.screens.item_search.not_donated.hint") { this.color = TextColor.GRAY })
 
     override fun setInitialFocus() {
         val widget = this.children().find { ((it as? ScalableWidget)?.original ?: it) == textBox } ?: return

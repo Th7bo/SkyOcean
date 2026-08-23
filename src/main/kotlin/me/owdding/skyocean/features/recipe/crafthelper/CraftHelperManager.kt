@@ -14,6 +14,8 @@ import me.owdding.skyocean.data.profile.CraftHelperStorage.setSelected
 import me.owdding.skyocean.features.item.search.highlight.ItemHighlighter
 import me.owdding.skyocean.features.item.search.search.ReferenceItemFilter
 import me.owdding.skyocean.features.item.sources.ItemSources
+import me.owdding.skyocean.features.recipe.RecipeType
+import me.owdding.skyocean.features.recipe.RepoApiRecipe
 import me.owdding.skyocean.features.recipe.crafthelper.eval.CraftHelperEtaTracker
 import me.owdding.skyocean.features.recipe.crafthelper.eval.ItemTracker
 import me.owdding.skyocean.features.recipe.serialize
@@ -208,8 +210,11 @@ object CraftHelperManager {
         event.itemStack.getSkyBlockId() ?: return
         event.register(
             Button.builder(Text.of("\uD83E\uDE93")) {
-                // TODO: set actual recipe instead of this
-                setItem(event.itemStack)
+                val type = RecipeType.fromRepoLibType(event.recipe.type()) ?: run {
+                    Text.of("Failed to set ItemList Recipe because type ${event.recipe.type()} is unknown.")
+                    return@builder
+                }
+                CraftHelperStorage.setRepoLibRecipe(RepoApiRecipe(event.recipe, type))
             }.apply {
                 tooltip(Tooltip.create(Text.of("Set as SkyOcean CraftHelper Item")))
                 size(12, 12)
@@ -257,7 +262,7 @@ object CraftHelperManager {
         CraftHelperStorage.items.forEachIndexed { i, recipe ->
             when (recipe) {
                 is me.owdding.skyocean.features.recipe.crafthelper.data.NormalCraftHelperRecipe ->
-                    field("Item $i", "${recipe.item} x${recipe.amount}")
+                    field("Item $i", "${recipe.selectedItem} x${recipe.amount}")
                 else -> field("Item $i", recipe.type.name)
             }
         }

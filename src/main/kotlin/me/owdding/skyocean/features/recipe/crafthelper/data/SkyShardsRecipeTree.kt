@@ -4,6 +4,7 @@ import kotlin.reflect.KClass
 import me.owdding.ktcodecs.FieldName
 import me.owdding.ktcodecs.GenerateCodec
 import me.owdding.ktcodecs.GenerateDispatchCodec
+import me.owdding.ktcodecs.OptionalNullable
 import me.owdding.skyocean.features.recipe.*
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperTree
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperRecipe
@@ -17,8 +18,11 @@ import java.util.UUID
 @GenerateCodec
 data class SkyShardsRecipe(
     var tree: SkyShardsMethod,
-    override val group: UUID?,
-) : CraftHelperRecipe(CraftHelperRecipeType.SKY_SHARDS, false) {
+    @OptionalNullable override val group: UUID? = null,
+) : CraftHelperRecipe(CraftHelperRecipeType.SKY_SHARDS) {
+    override val amount: Int get() = tree.quantity
+    override val selectedItem: SkyBlockId get() = tree.shard
+
     override fun resolve(
         resetLayout: () -> Unit,
         clear: () -> Unit,

@@ -229,7 +229,7 @@ object CraftHelperScreen : SkyOceanScreen("Craft Helper") {
 
     private fun createRecipeEntry(recipe: CraftHelperRecipe, idx: Int, width: Int, height: Int): LayoutElement = LayoutFactory.frame(width, height) {
         val name = when (recipe) {
-            is NormalCraftHelperRecipe -> recipe.item?.toItem()?.hoverName ?: Text.of(recipe.item?.id ?: "Unknown")
+            is NormalCraftHelperRecipe -> recipe.selectedItem?.toItem()?.hoverName ?: Text.of(recipe.selectedItem?.id ?: "Unknown")
             is SkyShardsRecipe -> Text.of("Sky Shards: ${recipe.tree.shard.id}")
             else -> Text.of("Unknown")
         }

@@ -14,7 +14,7 @@ object DefaultTreeResolver : TreeResolver<NormalCraftHelperRecipe> {
     override val type: CraftHelperRecipeType get() = CraftHelperRecipeType.NORMAL
 
     override fun resolve(recipe: NormalCraftHelperRecipe, resetLayout: () -> Unit, clear: () -> Unit): CraftHelperTree? {
-        val item = recipe.item ?: run {
+        val item = recipe.selectedItem ?: run {
             resetLayout()
             return null
         }

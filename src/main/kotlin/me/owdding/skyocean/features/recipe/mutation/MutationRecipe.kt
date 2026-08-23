@@ -7,7 +7,6 @@ import me.owdding.skyocean.features.recipe.RecipeType
 import me.owdding.skyocean.features.recipe.SkyOceanItemIngredient
 import me.owdding.skyocean.repo.garden.GreenhouseMutation
 import me.owdding.skyocean.repo.garden.GreenhouseMutationRepoData
-import me.owdding.skyocean.utils.extensions.sanitizeNeu
 import net.minecraft.network.chat.Component
 import tech.thatgravyboat.skyblockapi.api.remote.api.SkyBlockId
 import tech.thatgravyboat.skyblockapi.utils.extentions.toFormattedString
@@ -25,6 +24,18 @@ import tech.thatgravyboat.skyblockapi.utils.text.TextStyle.color
  * describes the layout that has to be built up, not a material cost. For the same reason the Crop
  * Analyzer fee is not part of [inputs]: it's a one-time cost per mutation, not per plot.
  */
+private val reverseNeuStuff = Regex("(\\w)-(\\d{1,2})")
+
+private fun SkyBlockId.sanitizeNeu(): SkyBlockId {
+    if (this.isItem) {
+        val sanitized = this.id.substringAfter(SkyBlockId.DELIMITER).sanitizeNeu()
+        return SkyBlockId.item(sanitized)
+    }
+    return this
+}
+
+private fun String.sanitizeNeu() = this.replace(reverseNeuStuff, "$1:$2")
+
 data class MutationRecipe(
     val id: SkyBlockId,
     val mutation: GreenhouseMutation,

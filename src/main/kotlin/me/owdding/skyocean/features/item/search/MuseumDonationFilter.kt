@@ -16,11 +16,6 @@ object MuseumDonationFilter {
 
     private val ignoredSources = setOf(ItemSources.FORGE)
 
-    /**
-     * Whether the museum has been opened on this profile, without that there is nothing to compare against.
-     */
-    val hasData: Boolean get() = MuseumAPI.getAllItems().isNotEmpty()
-
     fun filter(items: Iterable<SimpleTrackedItem>): List<SimpleTrackedItem> {
         val cache = mutableMapOf<SkyBlockId, Boolean>()
         return items.filter { item ->

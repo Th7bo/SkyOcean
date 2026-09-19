@@ -7,20 +7,25 @@ import earth.terrarium.olympus.client.components.renderers.WidgetRenderers
 import earth.terrarium.olympus.client.components.textbox.TextBox
 import earth.terrarium.olympus.client.ui.UIConstants
 import earth.terrarium.olympus.client.ui.UIIcons
-import earth.terrarium.olympus.client.ui.context.ContextMenu
 import earth.terrarium.olympus.client.utils.ListenableState
 import earth.terrarium.olympus.client.utils.StateUtils
 import me.owdding.lib.builder.LEFT
 import me.owdding.lib.builder.LayoutFactory
 import me.owdding.lib.builder.MIDDLE
 import me.owdding.lib.builder.RIGHT
-import me.owdding.lib.displays.*
+import me.owdding.lib.displays.DisplayWidget
+import me.owdding.lib.displays.Displays
 import me.owdding.lib.displays.Displays.background
+import me.owdding.lib.displays.asButton
+import me.owdding.lib.displays.asButtonLeft
+import me.owdding.lib.displays.asWidget
+import me.owdding.lib.displays.withPadding
+import me.owdding.lib.displays.withTooltip
 import me.owdding.lib.extensions.rightPad
 import me.owdding.lib.extensions.shorten
 import me.owdding.lib.layouts.ScalableWidget
-import me.owdding.lib.layouts.withPadding
 import me.owdding.skyocean.config.features.misc.MiscConfig
+import me.owdding.skyocean.features.inventory.SackValue
 import me.owdding.skyocean.features.item.search.MuseumDonationFilter
 import me.owdding.skyocean.features.item.search.highlight.ItemHighlighter
 import me.owdding.skyocean.features.item.search.matcher.ItemMatcher
@@ -42,11 +47,15 @@ import net.minecraft.util.ARGB
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import tech.thatgravyboat.skyblockapi.api.location.SkyBlockIsland
+import tech.thatgravyboat.skyblockapi.api.remote.api.SkyBlockId.Companion.getSkyBlockId
 import tech.thatgravyboat.skyblockapi.helpers.McClient
-import tech.thatgravyboat.skyblockapi.helpers.McFont
 import tech.thatgravyboat.skyblockapi.helpers.McScreen
 import tech.thatgravyboat.skyblockapi.platform.drawSprite
-import tech.thatgravyboat.skyblockapi.utils.extentions.*
+import tech.thatgravyboat.skyblockapi.utils.extentions.cleanName
+import tech.thatgravyboat.skyblockapi.utils.extentions.getLore
+import tech.thatgravyboat.skyblockapi.utils.extentions.getRawLore
+import tech.thatgravyboat.skyblockapi.utils.extentions.toFormattedName
+import tech.thatgravyboat.skyblockapi.utils.extentions.toFormattedString
 import tech.thatgravyboat.skyblockapi.utils.text.Text
 import tech.thatgravyboat.skyblockapi.utils.text.TextColor
 import tech.thatgravyboat.skyblockapi.utils.text.TextStyle.color
@@ -353,21 +362,7 @@ object ItemSearchScreen : SkyOceanScreen() {
 
             if (context is SackItemContext || (context is BundledItemContext && context.map.containsKey(ItemSources.SACKS))) {
                 item.asButton(leftAction) {
-                    ContextMenu.open { menu ->
-                        menu.withAutoCloseOff()
-                        val title = "Get From Sacks"
-                        menu.add { Widgets.text(title).withPadding(3) }
-                        menu.add {
-                            val state = ListenableState.of("")
-                            Widgets.textInput(state) {
-                                it.withSize(McFont.width(title), 20)
-                                it.withEnterCallback {
-                                    McClient.sendCommand("/gfs ${itemStack.getSkyBlockId()} ${state.get().parseFormattedLong()}")
-                                    menu.onClose()
-                                }
-                            }.withPadding(3)
-                        }
-                    }
+                    SackValue.openGfsContextMenu(itemStack.getSkyBlockId() ?: return@asButton)
                 }
             } else {
                 item.asButtonLeft(leftAction)

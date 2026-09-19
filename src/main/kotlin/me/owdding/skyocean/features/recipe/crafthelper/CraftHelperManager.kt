@@ -73,10 +73,18 @@ object CraftHelperManager {
 
         items.forEachIndexed { index, recipe ->
             var shouldRemove = false
-            val tree = recipe.resolve(
-                resetLayout = {},
-                clear = { shouldRemove = true },
-            )
+            val tree = try {
+                recipe.resolve(
+                    resetLayout = {},
+                    clear = { shouldRemove = true },
+                )
+            } catch (_: ArithmeticException) {
+                text("Craft Helper amount is too large. Please choose a smaller amount.")
+                    .withColor(TextColor.RED).sendWithPrefix()
+                shouldRemove = true
+                lastEvaluatedRoots.set(null)
+                null
+            }
             if (shouldRemove) {
                 indicesToRemove.add(index)
             } else if (tree != null) {

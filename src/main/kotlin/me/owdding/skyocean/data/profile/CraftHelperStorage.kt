@@ -1,6 +1,7 @@
 package me.owdding.skyocean.data.profile
 
 import com.mojang.serialization.Codec
+import me.owdding.skyocean.SkyOcean
 import me.owdding.skyocean.features.recipe.RepoApiRecipe
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperCategory
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperRecipe
@@ -11,7 +12,6 @@ import me.owdding.skyocean.features.recipe.crafthelper.data.SkyShardsRecipe
 import me.owdding.skyocean.generated.SkyOceanCodecs
 import me.owdding.skyocean.utils.LateInitModule
 import me.owdding.skyocean.utils.codecs.CodecHelpers
-import me.owdding.skyocean.utils.storage.ProfileStorage
 import tech.thatgravyboat.skyblockapi.api.remote.api.SkyBlockId
 import java.util.UUID
 import kotlin.math.ceil
@@ -35,10 +35,10 @@ object CraftHelperStorage {
             { it.firstOrNull() ?: NormalCraftHelperRecipe(null, group = null) },
         )
 
-    private val storage = ProfileStorage<List<CraftHelperRecipe>>(
-        3,
-        { emptyList() },
-        "craft_helper",
+    private val storage = SkyOcean.profileStorage<List<CraftHelperRecipe>>(
+        fileName = "craft_helper",
+        defaultData = { emptyList() },
+        version = 3,
     ) { version ->
         when (version) {
             0 -> wrapInList(
@@ -63,10 +63,10 @@ object CraftHelperStorage {
         }
     }
 
-    private val categoryStorage = ProfileStorage<MutableList<CraftHelperCategory>>(
-        0,
-        { mutableListOf() },
-        "craft_helper_categories",
+    private val categoryStorage = SkyOcean.profileStorage<MutableList<CraftHelperCategory>>(
+        fileName = "craft_helper_categories",
+        defaultData = { mutableListOf() },
+        version = 0,
     ) { version ->
         when (version) {
             0 -> SkyOceanCodecs.CraftHelperCategoryCodec.codec().listOf()
@@ -75,10 +75,10 @@ object CraftHelperStorage {
         }
     }
 
-    private val activeCategoryStorage = ProfileStorage<String>(
-        0,
-        { ALL_CATEGORY_KEY },
-        "craft_helper_active_category",
+    private val activeCategoryStorage = SkyOcean.profileStorage<String>(
+        fileName = "craft_helper_active_category",
+        defaultData = { ALL_CATEGORY_KEY },
+        version = 0,
     ) { version ->
         when (version) {
             0 -> Codec.STRING

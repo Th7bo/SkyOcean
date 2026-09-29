@@ -19,7 +19,6 @@ import me.owdding.skyocean.utils.debugToggle
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonInfo
 import net.minecraft.util.Util
-import org.lwjgl.glfw.GLFW
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
 import tech.thatgravyboat.skyblockapi.api.events.render.RenderHudEvent
 import tech.thatgravyboat.skyblockapi.api.events.time.TickEvent
@@ -133,10 +132,10 @@ object HotkeyManager {
         if (HotkeyConfig.disabled) return false
         if (McScreen.self is IgnoreHotkeyInputs) return false
         val key by key
-        if (action == GLFW.GLFW_RELEASE) {
+        if (action == 0) {
             this.pressedKeys.remove(key)
         }
-        if (action != GLFW.GLFW_PRESS) return false
+        if (action != 1) return false
         lastUpdated = System.currentTimeMillis()
         buffer.add(key)
         pressedKeys.add(key)
@@ -165,8 +164,7 @@ object HotkeyManager {
 
     @JvmStatic
     fun handle(event: KeyEvent, action: Int): Boolean {
-        if (!McClient.options.keyDebugModifier.isDown) return handleKey(lazy { InputConstants.getKey(event) }, action)
-        return false
+        return !McClient.options.keyDebugModifier.isDown && handleKey(lazy { InputConstants.getKey(event) }, action)
     }
 
     fun clearBuffers() {

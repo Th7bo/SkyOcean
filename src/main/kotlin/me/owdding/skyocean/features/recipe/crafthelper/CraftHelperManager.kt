@@ -2,7 +2,6 @@ package me.owdding.skyocean.features.recipe.crafthelper
 
 import com.mojang.blaze3d.platform.InputConstants
 import me.owdding.ktmodules.Module
-import me.owdding.lib.compat.REIRuntimeCompatability
 import me.owdding.lib.events.ItemListEvent
 import me.owdding.skyocean.ApiDebug
 import me.owdding.skyocean.config.SkyOceanKeybind
@@ -11,8 +10,6 @@ import me.owdding.skyocean.config.features.misc.crafthelper.CraftHelperNotificat
 import me.owdding.skyocean.data.profile.CraftHelperStorage
 import me.owdding.skyocean.events.RegisterSkyOceanCommandEvent
 import me.owdding.skyocean.data.profile.CraftHelperStorage.setSelected
-import me.owdding.skyocean.features.item.search.highlight.ItemHighlighter
-import me.owdding.skyocean.features.item.search.search.ReferenceItemFilter
 import me.owdding.skyocean.features.item.sources.ItemSources
 import me.owdding.skyocean.features.recipe.RecipeType
 import me.owdding.skyocean.features.recipe.RepoApiRecipe
@@ -164,6 +161,7 @@ object CraftHelperManager {
                     }.sendWithPrefix()
                 }
             }
+
             CraftHelperNotificationType.DONE_TITLE -> {
                 val title = if (rootCount == 1) {
                     CraftHelperStorage.selectedItem?.let {
@@ -185,6 +183,7 @@ object CraftHelperManager {
                 }
                 McClient.setTitle(title, null, 0f, 3f, 0.5f)
             }
+
             CraftHelperNotificationType.DONE_SOUND -> {
                 McClient.playSound(CraftHelperConfig.doneNotificationConfig.soundEvent)
             }
@@ -278,24 +277,27 @@ object CraftHelperManager {
             literal(it.name)
         }
         val itemTracker = ItemTracker(ItemSources.craftHelperSources - CraftHelperConfig.disallowedSources.toSet())
-        field("Total Items Tracked", itemTracker.items.values.flatten().sumOf { it.amount }, copyValue = buildString {
-            appendLine("Currencies")
-            appendLine()
-            itemTracker.currencies.entries.sortedByDescending { (_, amount) -> amount }.forEach { (type, amount) ->
-                appendLine("- $type: ${amount.toFormattedString()}")
-            }
-            appendLine()
-            appendLine("Items")
-            itemTracker.items.entries.sortedByDescending { (_, value) -> value.sumOf { it.amount } }.forEach { (id, sources) ->
-                append("- ")
-                append(id)
-                append(": ")
-                append(sources.sumOf { it.amount }.toFormattedString())
-                append(" (")
-                append(sources.map { 1 shl it.source.ordinal }.reduce(Int::or).toString(32))
-                append(")")
+        field(
+            "Total Items Tracked", itemTracker.items.values.flatten().sumOf { it.amount },
+            copyValue = buildString {
+                appendLine("Currencies")
                 appendLine()
-            }
-        })
+                itemTracker.currencies.entries.sortedByDescending { (_, amount) -> amount }.forEach { (type, amount) ->
+                    appendLine("- $type: ${amount.toFormattedString()}")
+                }
+                appendLine()
+                appendLine("Items")
+                itemTracker.items.entries.sortedByDescending { (_, value) -> value.sumOf { it.amount } }.forEach { (id, sources) ->
+                    append("- ")
+                    append(id)
+                    append(": ")
+                    append(sources.sumOf { it.amount }.toFormattedString())
+                    append(" (")
+                    append(sources.map { 1 shl it.source.ordinal }.reduce(Int::or).toString(32))
+                    append(")")
+                    appendLine()
+                }
+            },
+        )
     }
 }

@@ -14,7 +14,7 @@ data class RepoLibRecipeTree(
     var recipe: RepoApiRecipe,
     override var amount: Int,
     @OptionalNullable override val group: UUID? = null,
-) : CraftHelperRecipe(CraftHelperRecipeType.REPO_LIB_RECIPE) , CraftHelperRecipe.MutableCount, CraftHelperRecipe.MultiplesOf {
+) : CraftHelperRecipe(CraftHelperRecipeType.REPO_LIB_RECIPE), CraftHelperRecipe.MutableCount, CraftHelperRecipe.MultiplesOf {
     override val selectedItem: SkyBlockId? get() = recipe.output?.id
 
     override fun resolve(resetLayout: () -> Unit, clear: () -> Unit): CraftHelperTree? {

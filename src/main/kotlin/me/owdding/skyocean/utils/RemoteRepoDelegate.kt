@@ -7,7 +7,6 @@ import me.owdding.lib.utils.MeowddingLogger
 import me.owdding.skyocean.SkyOcean
 import me.owdding.skyocean.generated.SkyOceanCodecs
 import me.owdding.skyocean.utils.Utils.loadRemoteRepoData
-import me.owdding.skyocean.utils.extensions.runCatching
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicReference

@@ -1,5 +1,7 @@
 package me.owdding.skyocean.mixins.compat.skysoft;
 
+//? <= 26.2 {
+/*
 import com.llamalad7.mixinextras.sugar.Local;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import com.skysoft.data.skyblock.ItemListEntryKey;
@@ -67,3 +69,4 @@ public class ItemListViewerScreenMixin {
         }
     }
 }
+*///? }

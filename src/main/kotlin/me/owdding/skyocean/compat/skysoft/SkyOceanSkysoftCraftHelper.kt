@@ -1,5 +1,7 @@
 package me.owdding.skyocean.compat.skysoft
 
+//? <= 26.2 {
+/*
 import com.skysoft.data.skyblock.RecipeIngredient
 import com.skysoft.data.skyblock.RecipeIngredientKind
 import com.skysoft.data.skyblock.SkyBlockRecipe
@@ -84,3 +86,4 @@ object SkyOceanSkysoftCraftHelper {
             ?.let(SkyBlockId::unknownType)
     }
 }
+*///? }

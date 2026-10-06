@@ -31,6 +31,7 @@ repositories {
         "com.terraformersmc"
     )
     scopedMaven("https://maven.nucleoid.xyz/", "eu.pb4")
+    scopedMaven("https://maven.azureaaron.net/releases", "net.azureaaron")
     scopedMaven("https://maven.shedaniel.me/", "me.shedaniel")
     scopedMaven("https://maven.architectury.dev/", "dev.architectury")
     mavenCentral()
@@ -244,6 +245,9 @@ dependencies {
     includeImplementation(versionedCatalog["placeholders"])
     includeImplementation(versionedCatalog["resourceful.config.kotlin"])
     includeImplementation(versionedCatalog["olympus"])
+    if (versionedCatalog.libraries.has("renderchest")) {
+        includeImplementation(versionedCatalog["renderchest"])
+    }
 
     implementation(versionedCatalog["moulberry.mixinconstraints"]) // Already included in mlib
 

@@ -24,4 +24,5 @@ data class NormalCraftHelperRecipe(
     }
 
     override fun withAmount(amount: Int): CraftHelperRecipe = copy(amount = amount)
+    override fun withGroup(group: UUID?): CraftHelperRecipe = copy(group = group)
 }

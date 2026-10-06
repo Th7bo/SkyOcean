@@ -114,8 +114,7 @@ object CraftHelperStorage {
         item ?: return false
         val current = items.toMutableList()
         if (current.any { it is NormalCraftHelperRecipe && it.selectedItem == item }) return false
-        val group = activeCategory?.takeUnless { it.isDefault() }?.identifier
-        current.add(NormalCraftHelperRecipe(item, group = group))
+        current.add(NormalCraftHelperRecipe(item, group = activeGroup))
         storage.set(current)
         save()
         return true
@@ -135,13 +134,22 @@ object CraftHelperStorage {
         item?.let { addItem(it) }
     }
 
-    /** Adds (or replaces the same-type/same-item entry) a fully-built recipe to the active list. */
+    private val activeGroup: UUID? get() = activeCategory?.takeUnless { it.isDefault() }?.identifier
+
+    /**
+     * Adds (or replaces the same-type/same-item entry) a fully-built recipe to the active list.
+     *
+     * Recipes built without a group (the in-GUI craft helper buttons) are filed under the active
+     * category, otherwise they would be stored but filtered out of [activeItems] and look like
+     * nothing happened.
+     */
     fun set(recipe: CraftHelperRecipe) {
+        val grouped = if (recipe.group == null) recipe.withGroup(activeGroup) else recipe
         val current = items.toMutableList()
-        val existing = recipe.selectedItem?.let { sel ->
-            current.indexOfFirst { it.type == recipe.type && it.selectedItem == sel }
+        val existing = grouped.selectedItem?.let { sel ->
+            current.indexOfFirst { it.type == grouped.type && it.selectedItem == sel }
         } ?: -1
-        if (existing != -1) current[existing] = recipe else current.add(recipe)
+        if (existing != -1) current[existing] = grouped else current.add(grouped)
         storage.set(current)
         save()
     }
@@ -169,17 +177,16 @@ object CraftHelperStorage {
     fun setSkyShards(recipe: SkyShardsMethod) {
         val current = items.toMutableList()
         if (current.isEmpty()) {
-            current.add(SkyShardsRecipe(recipe, null))
+            current.add(SkyShardsRecipe(recipe, activeGroup))
         } else {
-            current[0] = SkyShardsRecipe(recipe, null)
+            current[0] = SkyShardsRecipe(recipe, activeGroup)
         }
         storage.set(current)
         save()
     }
 
     fun setRepoLibRecipe(recipe: RepoApiRecipe) {
-        val group = activeCategory?.takeUnless { it.isDefault() }?.identifier
-        set(RepoLibRecipeTree(recipe, recipe.output?.amount ?: 1, group = group))
+        set(RepoLibRecipeTree(recipe, recipe.output?.amount ?: 1, group = activeGroup))
     }
 
     fun clear() {

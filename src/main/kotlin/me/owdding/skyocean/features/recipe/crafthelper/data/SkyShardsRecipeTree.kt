@@ -28,6 +28,8 @@ data class SkyShardsRecipe(
     override val amount: Int get() = tree.quantity
     override val selectedItem: SkyBlockId get() = tree.shard
 
+    override fun withGroup(group: UUID?): SkyShardsRecipe = copy(group = group)
+
     override fun resolve(
         resetLayout: () -> Unit,
         clear: () -> Unit,

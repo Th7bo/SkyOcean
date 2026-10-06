@@ -18,5 +18,7 @@ abstract class CraftHelperRecipe(val type: CraftHelperRecipeType) {
         val multiples: Int
     }
 
+    abstract fun withGroup(group: UUID?): CraftHelperRecipe
+
     abstract fun resolve(resetLayout: () -> Unit, clear: () -> Unit): CraftHelperTree?
 }

@@ -22,5 +22,6 @@ data class RepoLibRecipeTree(
     }
 
     override fun withAmount(amount: Int): RepoLibRecipeTree = copy(amount = amount)
+    override fun withGroup(group: UUID?): RepoLibRecipeTree = copy(group = group)
     override val multiples: Int get() = recipe.output?.amount ?: 1
 }

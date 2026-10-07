@@ -5,7 +5,6 @@ import earth.terrarium.olympus.client.ui.UIIcons
 import me.owdding.lib.builder.LayoutFactory
 import me.owdding.skyocean.SkyOcean
 import me.owdding.skyocean.data.profile.CraftHelperStorage
-import me.owdding.skyocean.features.recipe.crafthelper.data.NormalCraftHelperRecipe
 import me.owdding.skyocean.features.recipe.crafthelper.data.SkyShardsRecipe
 import me.owdding.skyocean.utils.SkyOceanScreen
 import me.owdding.skyocean.utils.chat.CatppuccinColors
@@ -229,14 +228,15 @@ object CraftHelperScreen : SkyOceanScreen("Craft Helper") {
 
     private fun createRecipeEntry(recipe: CraftHelperRecipe, idx: Int, width: Int, height: Int): LayoutElement = LayoutFactory.frame(width, height) {
         val name = when (recipe) {
-            is NormalCraftHelperRecipe -> recipe.selectedItem?.toItem()?.hoverName ?: Text.of(recipe.selectedItem?.id ?: "Unknown")
             is SkyShardsRecipe -> Text.of("Sky Shards: ${recipe.tree.shard.id}")
-            else -> Text.of("Unknown")
+            // Covers NORMAL and REPO_LIB_RECIPE (the in-GUI craft helper buttons) alike; the latter
+            // reports its output as the selected item, so it no longer falls through to "Unknown".
+            else -> recipe.selectedItem?.toItem()?.hoverName ?: Text.of(recipe.selectedItem?.id ?: "Unknown")
         }
 
         LayoutFactory.vertical {
             createText(name).withPadding(left = 2).add()
-            if (recipe is NormalCraftHelperRecipe) {
+            if (recipe !is SkyShardsRecipe) {
                 createText("x${recipe.amount}", CatppuccinColors.Mocha.subtext0)
                     .withPadding(left = 2, top = 2).add()
             }

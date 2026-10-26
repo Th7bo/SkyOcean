@@ -9,8 +9,9 @@ object DefaultEnabledMessageHelper {
 
     private val storage = SkyOcean.storage(
         "default_enabled_messages",
-        { mutableListOf() },
-        CodecHelpers.mutableList<String>(),
+        defaultData = { mutableListOf() },
+        differentAlphaData = false,
+        codec = CodecHelpers.mutableList<String>(),
     )
 
     fun needsSend(id: String): Boolean = !storage.get().contains(id)

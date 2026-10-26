@@ -29,7 +29,7 @@ object InventoryConfig : CategoryKt("inventory") {
         translation = "skyocean.config.inventory.accessories_helper"
     }
 
-    var disabledAccessoryIcons by select<AccessoriesHelper.AccessoryResult> {
+    var disabledAccessoryIcons by select(*AccessoriesHelper.AccessoryResult.defaultDisabled.toTypedArray()) {
         translation = "skyocean.config.inventory.accessories_helper.disabled_icons"
     }
 
@@ -62,8 +62,8 @@ object InventoryConfig : CategoryKt("inventory") {
     init {
         button {
             title = "skyocean.config.inventory.inventory_buttons.edit"
-            text = "Open"
             description = "skyocean.config.inventory.inventory_buttons.edit.desc"
+            text = "skyocean.config.inventory.inventory_buttons.open"
             onClick {
                 McClient.setScreen(McScreen.self?.let { ButtonConfigScreen(it) })
             }

@@ -18,8 +18,8 @@ object MinionStorage {
 
     private val storage = SkyOcean.profileStorage(
         "minions",
-        { CopyOnWriteArrayList() },
-        CodecHelpers.copyOnWriteList(SkyOceanCodecs.getCodec<Minion>()),
+        defaultData =  { CopyOnWriteArrayList() },
+        codec = CodecHelpers.copyOnWriteList(SkyOceanCodecs.getCodec<Minion>()),
     )
 
     val unlockedMinions: CopyOnWriteArrayList<Minion> get() = storage.get() ?: CopyOnWriteArrayList()
@@ -28,7 +28,7 @@ object MinionStorage {
 
     @Subscription(priority = Subscription.HIGHEST)
     @InventoryTitle("\\(\\d+/\\d+\\) Crafted Minions")
-    fun onOpen(event: ContainerInitializedEvent) {
+    private fun onOpen(event: ContainerInitializedEvent) {
         val currentMinions = storage.get() ?: CopyOnWriteArrayList()
         var dataChanged = false
 

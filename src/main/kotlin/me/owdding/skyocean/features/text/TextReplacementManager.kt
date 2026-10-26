@@ -10,15 +10,13 @@ import me.owdding.lib.utils.mod.data.MeowddingStorageData
 import me.owdding.skyocean.SkyOcean
 import me.owdding.skyocean.events.RegisterSkyOceanCommandEvent
 import me.owdding.skyocean.generated.SkyOceanCodecs
-import me.owdding.skyocean.utils.Utils.edit
 import me.owdding.skyocean.utils.codecs.CodecHelpers
 import me.owdding.skyocean.utils.extensions.indexOfOrNull
 import net.minecraft.util.Util
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
 import tech.thatgravyboat.skyblockapi.helpers.McClient
 import tech.thatgravyboat.skyblockapi.helpers.McPlayer
-import java.util.HashSet
-import java.util.UUID
+import java.util.*
 import java.util.function.Function
 
 @Module
@@ -43,8 +41,9 @@ object TextReplacementManager {
 
     private val storage: MeowddingStorageData<StoredData> = SkyOcean.storage(
         "text_replacements",
-        { StoredData(mutableSetOf(), HashSet()) },
-        Codec.withAlternative(
+        defaultData = { StoredData(mutableSetOf(), HashSet()) },
+        differentAlphaData = false,
+        codec = Codec.withAlternative(
             SkyOceanCodecs.TextReplacementDataCodec.codec(),
             textReplacementSet.xmap({ StoredData(mutableSetOf(), it) }, { it.replacements }),
         ),
@@ -57,7 +56,7 @@ object TextReplacementManager {
     }
 
     @Subscription
-    fun registerCommand(event: RegisterSkyOceanCommandEvent) {
+    private fun registerCommand(event: RegisterSkyOceanCommandEvent) {
         event.registerWithCallback("text_replacements") {
             McClient.setScreenAsync { TextReplacementScreen }
         }
@@ -99,8 +98,8 @@ object TextReplacementManager {
 
     fun deleteCategory(category: TextReplacementCategory) {
         this.storage.edit {
-            replacements.removeAll { it.category == category.identifier }
-            categories.removeIf { it.identifier == category.identifier }
+            replacements.removeAll { it.category == category.identifier } ||
+                categories.removeIf { it.identifier == category.identifier }
         }
     }
 

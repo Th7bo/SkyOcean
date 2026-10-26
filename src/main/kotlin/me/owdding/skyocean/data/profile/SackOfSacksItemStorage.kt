@@ -17,7 +17,7 @@ object SackOfSacksItemStorage {
     private val storage = SkyOcean.profileStorage(
         fileName = "sack_of_sacks",
         defaultData = { mutableListOf() },
-        CodecHelpers.mutableList<ItemStack>(),
+        codec = CodecHelpers.mutableList<ItemStack>(),
     )
 
     val items: List<ItemStack> get() = storage.get().orEmpty()
@@ -25,7 +25,7 @@ object SackOfSacksItemStorage {
     @Subscription
     @OnlyOnSkyBlock
     @MustBeContainer
-    fun onInventoryChange(event: InventoryChangeEvent) {
+    private fun onInventoryChange(event: InventoryChangeEvent) {
         if (!event.title.equals("sack of sacks", true)) return
 
         val sacks = event.inventory.containerItems().filterNot { it.getSkyBlockId() == null }

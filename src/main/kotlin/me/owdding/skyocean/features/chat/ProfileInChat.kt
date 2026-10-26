@@ -102,7 +102,7 @@ object ProfileInChat {
 
     @Subscription(TabListChangeEvent::class)
     @OnlyOnSkyBlock
-    fun onTablistUpdate() {
+    private fun onTablistUpdate() {
         if (!ChatConfig.enableProfileInChat) return
 
         McClient.players.forEach { player ->
@@ -112,6 +112,8 @@ object ProfileInChat {
             StringDecomposer.iterateFormatted(suffix, Style.EMPTY) { _, style, codepoint ->
                 Character.toString(codepoint).forEach { char ->
                     if (profileTypes.containsKey(char)) {
+                        val color = profileTypes[char]
+                        if (color != null && style.color?.value != color) return@forEach
                         val data = profileTypeLookup(char, style.color?.value ?: TextColor.WHITE)
                         usernameToProfileTypeCache[name] = data
                     }
@@ -123,7 +125,7 @@ object ProfileInChat {
 
     @OnlyOnSkyBlock
     @Subscription(priority = LOWEST)
-    fun onChat(event: ChatReceivedEvent.Post) {
+    private fun onChat(event: ChatReceivedEvent.Post) {
         try {
             if (!ChatConfig.enableProfileInChat) return
             matcher.decompose(event.component) {
@@ -144,7 +146,7 @@ object ProfileInChat {
 
     @OnlyOnSkyBlock
     @Subscription(ServerChangeEvent::class)
-    fun onServerChange() {
+    private fun onServerChange() {
         usernameToProfileTypeCache.invalidateAll()
     }
 }

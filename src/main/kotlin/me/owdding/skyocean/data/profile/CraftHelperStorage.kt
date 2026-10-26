@@ -5,6 +5,7 @@ import me.owdding.skyocean.SkyOcean
 import me.owdding.skyocean.features.recipe.RepoApiRecipe
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperCategory
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperRecipe
+import me.owdding.skyocean.features.recipe.crafthelper.data.IngredientCraftHelperRecipe
 import me.owdding.skyocean.features.recipe.crafthelper.data.NormalCraftHelperRecipe
 import me.owdding.skyocean.features.recipe.crafthelper.data.RepoLibRecipeTree
 import me.owdding.skyocean.features.recipe.crafthelper.data.SkyShardsMethod
@@ -36,32 +37,35 @@ object CraftHelperStorage {
         )
 
     private val storage = SkyOcean.profileStorage<List<CraftHelperRecipe>>(
-        fileName = "craft_helper",
+        "craft_helper",
         defaultData = { emptyList() },
         version = 3,
-    ) { version ->
-        when (version) {
-            0 -> wrapInList(
-                SkyOceanCodecs.NormalCraftHelperRecipeCodec.codec().xmap(
-                    { recipe ->
-                        NormalCraftHelperRecipe(
-                            recipe.selectedItem?.id?.let { SkyBlockId.unknownType(it) },
-                            recipe.amount,
-                            group = null,
-                        ) as CraftHelperRecipe
-                    },
-                    { it as NormalCraftHelperRecipe },
-                ),
-            )
-            1 -> wrapInList(
-                SkyOceanCodecs.NormalCraftHelperRecipeCodec.codec()
-                    .xmap({ it as CraftHelperRecipe }, { it as NormalCraftHelperRecipe }),
-            )
-            2 -> wrapInList(SkyOceanCodecs.CraftHelperRecipeCodec.codec())
-            3 -> SkyOceanCodecs.CraftHelperRecipeCodec.codec().listOf()
-            else -> CodecHelpers.unit { emptyList<CraftHelperRecipe>() }
+        codec = { version ->
+            when (version) {
+                0 -> wrapInList(
+                    SkyOceanCodecs.NormalCraftHelperRecipeCodec.codec().xmap(
+                        { recipe ->
+                            NormalCraftHelperRecipe(
+                                recipe.selectedItem?.id?.let { SkyBlockId.unknownType(it) },
+                                recipe.amount,
+                                group = null,
+                            ) as CraftHelperRecipe
+                        },
+                        { it as NormalCraftHelperRecipe },
+                    ),
+                )
+
+                1 -> wrapInList(
+                    SkyOceanCodecs.NormalCraftHelperRecipeCodec.codec()
+                        .xmap({ it as CraftHelperRecipe }, { it as NormalCraftHelperRecipe }),
+                )
+
+                2 -> wrapInList(SkyOceanCodecs.CraftHelperRecipeCodec.codec())
+                3 -> SkyOceanCodecs.CraftHelperRecipeCodec.codec().listOf()
+                else -> CodecHelpers.unit { emptyList<CraftHelperRecipe>() }
+            }
         }
-    }
+    )
 
     private val categoryStorage = SkyOcean.profileStorage<MutableList<CraftHelperCategory>>(
         fileName = "craft_helper_categories",
@@ -239,4 +243,27 @@ object CraftHelperStorage {
         defaultCategory.identifier.toString() -> defaultCategory
         else -> categories.firstOrNull { it.identifier.toString() == key }
     }
+
+    fun <T> addToIngredientRecipe(recipe: T) where T : CraftHelperRecipe, T : CraftHelperRecipe.Ingredients {
+        getOrCreateIngredientRecipe().add(recipe.entriesForAddition.map { it.withAmount(it.amount * recipe.amount) })
+        save()
+    }
+
+    /**
+     * Upstream keeps a single stored recipe, so it could swap the one slot out. Here the active
+     * category holds a list, so reuse its ingredient recipe if it already has one and otherwise
+     * seed a new one from the first entry, filed under the active category.
+     */
+    fun getOrCreateIngredientRecipe(): IngredientCraftHelperRecipe {
+        activeItems.filterIsInstance<IngredientCraftHelperRecipe>().firstOrNull()?.let { return it }
+
+        val seed = data
+        val newRecipe = IngredientCraftHelperRecipe(group = activeGroup).apply {
+            val inputs = (seed as? CraftHelperRecipe.Ingredients)?.entriesForAddition ?: return@apply
+            add(inputs.map { it.withAmount(it.amount * seed.amount) })
+        }
+        set(newRecipe)
+        return newRecipe
+    }
+
 }

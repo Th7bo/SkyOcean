@@ -16,6 +16,7 @@ import me.owdding.skyocean.compat.CatharsisSupport
 import me.owdding.skyocean.config.features.misc.crafthelper.CraftHelperConfig
 import me.owdding.skyocean.data.profile.CraftHelperStorage
 import me.owdding.skyocean.features.item.sources.ItemSources
+import me.owdding.skyocean.features.recipe.Ingredient
 import me.owdding.skyocean.features.recipe.ItemLikeIngredient
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperManager
 import me.owdding.skyocean.features.recipe.crafthelper.CraftHelperTree
@@ -54,7 +55,7 @@ import kotlin.math.max
 @LateInitModule
 object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
 
-    private val ignoreChecks by debugToggle("cafthelper/ignore_checks")
+    private val ignoreChecks by debugToggle("crafthelper/ignore_checks")
 
     private var craftHelperLayout: LayoutElement? = null
     var currentPage = 0
@@ -62,7 +63,7 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
     private const val BACKGROUND_PADDING = 14
 
     @Subscription
-    fun onScreenInit(event: ScreenInitializedEvent) {
+    private fun onScreenInit(event: ScreenInitializedEvent) {
         if (!CraftHelperConfig.enabled && !ignoreChecks) return
         if (!LocationAPI.isOnSkyBlock && !ignoreChecks) return
         if (CatharsisSupport.isModElementHidden("skyocean:crafthelper")) return
@@ -123,14 +124,14 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
     }
 
     @Subscription
-    fun onItemListRender(event: ItemListEvent.RegisterExclusionZones) {
+    private fun onItemListRender(event: ItemListEvent.RegisterExclusionZones) {
         craftHelperLayout?.let {
             event.register(it.x, it.y, it.width, it.height)
         }
     }
 
     @Subscription(ContainerCloseEvent::class)
-    fun onScreenClose() {
+    private fun onScreenClose() {
         craftHelperLayout = null
     }
 
@@ -272,6 +273,7 @@ object CraftHelperDisplay : MeowddingLogger by SkyOcean.featureLogger() {
             val contentWidth = minOf(maxLine, maxWidth)
 
             horizontal(5, MIDDLE) {
+
                 val item = ExtraDisplays.inventoryBackground(1, 1, Displays.item(output.item, showTooltip = true).withPadding(2))
                 val titleWidth = max(0, contentWidth - item.getWidth() - 10)
                 display(item)

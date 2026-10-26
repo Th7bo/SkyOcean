@@ -6,12 +6,7 @@ import me.owdding.skyocean.config.CachedValue
 import me.owdding.skyocean.config.features.inventory.InventoryConfig
 import me.owdding.skyocean.events.RegisterSkyOceanCommandEvent
 import me.owdding.skyocean.features.inventory.accessories.AccessoriesAPI.isDisallowed
-import me.owdding.skyocean.features.inventory.accessories.AccessoriesHelper.AccessoryResult.DOWNGRADE
-import me.owdding.skyocean.features.inventory.accessories.AccessoriesHelper.AccessoryResult.DUPLICATE
-import me.owdding.skyocean.features.inventory.accessories.AccessoriesHelper.AccessoryResult.MAXED
-import me.owdding.skyocean.features.inventory.accessories.AccessoriesHelper.AccessoryResult.MISSING
-import me.owdding.skyocean.features.inventory.accessories.AccessoriesHelper.AccessoryResult.UPGRADE
-import me.owdding.skyocean.features.inventory.accessories.AccessoriesHelper.AccessoryResult.UPGRADEABLE
+import me.owdding.skyocean.features.inventory.accessories.AccessoriesAPI.isRiftPrism
 import me.owdding.skyocean.features.item.modifier.AbstractItemModifier
 import me.owdding.skyocean.features.item.modifier.ItemModifier
 import me.owdding.skyocean.utils.chat.ChatUtils.sendWithPrefix
@@ -26,6 +21,7 @@ import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
 import tech.thatgravyboat.skyblockapi.api.location.LocationAPI
 import tech.thatgravyboat.skyblockapi.api.location.SkyBlockIsland
 import tech.thatgravyboat.skyblockapi.api.profile.items.accessory.AccessoryBagAPI
+import tech.thatgravyboat.skyblockapi.api.profile.maxwell.MaxwellAPI
 import tech.thatgravyboat.skyblockapi.api.remote.api.SkyBlockId
 import tech.thatgravyboat.skyblockapi.api.remote.api.SkyBlockId.Companion.getSkyBlockId
 import tech.thatgravyboat.skyblockapi.helpers.McClient
@@ -70,6 +66,10 @@ object AccessoriesHelper : AbstractItemModifier() {
 
     fun getResult(id: SkyBlockId): AccessoryResult? {
         val (family, tier) = getFamilyAndTier(id) ?: return null
+        // if the accessory family has the source of bingo/rift, we return null
+        if (family.isDisallowed()) return null
+        // if the accessory is a rift prism, and we have already consumed a rift prism, we return maxed
+        if (family.isRiftPrism() && MaxwellAPI.consumedRiftPrism) return MAXED
         val hasId = id in currentIds
         // If you have another accessory of the same line, in the same tier
         if (hasId && hasDuplicate(id) && !ignoreDuplicate(id)) return DUPLICATE
@@ -113,6 +113,10 @@ object AccessoriesHelper : AbstractItemModifier() {
         constructor(icon: String, color: Int) : this(Text.of(icon, color), color)
 
         override fun getTranslationKey(): String = "skyocean.config.inventory.accessories_helper.icons.${name.lowercase()}"
+
+        companion object {
+            val defaultDisabled = listOf(MAXED)
+        }
     }
 
     val currentIds: Set<SkyBlockId> by CachedValue(1.seconds) { getCurrentAccessories().toSet() }
@@ -125,7 +129,11 @@ object AccessoriesHelper : AbstractItemModifier() {
     fun getMissingAccessories(): Set<AccessoryFamily> {
         val ids = currentIds
         return AccessoriesAPI.families.values.filterTo(mutableSetOf()) { family ->
-            family.flatMapItems().none { it in ids } && !family.isDisallowed()
+            val hasAccessory = family.flatMapItems().any { it in ids }
+            if (hasAccessory) return@filterTo false
+            if (family.isDisallowed()) return@filterTo false
+            if (family.isRiftPrism() && MaxwellAPI.consumedRiftPrism) return@filterTo false
+            return@filterTo true
         }
     }
 
@@ -136,14 +144,14 @@ object AccessoriesHelper : AbstractItemModifier() {
     )
 
     fun getUpgradeableRarityAccessories(): List<AccessoryRarityUpgradeData> {
-        return AccessoryBagAPI.getItems()
+        return MaxwellAPI.accessories
             .asSequence()
-            .map { it.item }
             .mapNotNull { item ->
                 val id = item.getSkyBlockId() ?: return@mapNotNull null
                 val upgraded = AccessoriesAPI.getRarityUpgraded(id) ?: return@mapNotNull null
                 val family = AccessoriesAPI.getFamily(id) ?: return@mapNotNull null
                 if (family.isDisallowed()) return@mapNotNull null
+                if (family.isRiftPrism() && MaxwellAPI.consumedRiftPrism) return@mapNotNull null
                 val realRarity = item.getRealRarity() ?: return@mapNotNull null
                 val next = upgraded.nextAfter(realRarity) ?: return@mapNotNull null
                 AccessoryRarityUpgradeData(family, item, next)
@@ -158,13 +166,13 @@ object AccessoriesHelper : AbstractItemModifier() {
     )
 
     fun getUpgradeableAccessories(): List<AccessoryUpgradeData> {
-        return AccessoryBagAPI.getItems()
+        return MaxwellAPI.accessories
             .asSequence()
-            .map { it.item }
             .mapNotNull { item ->
                 val id = item.getSkyBlockId() ?: return@mapNotNull null
                 val family = AccessoriesAPI.getFamily(id) ?: return@mapNotNull null
                 if (family.isDisallowed()) return@mapNotNull null
+                if (family.isRiftPrism() && MaxwellAPI.consumedRiftPrism) return@mapNotNull null
                 val tier = family.indexOfFirst { id in it } + 1
                 val nextTier = family.getOrNull(tier) ?: return@mapNotNull null
                 AccessoryUpgradeData(item, family, nextTier, tier)
@@ -175,7 +183,7 @@ object AccessoriesHelper : AbstractItemModifier() {
     }
 
     @Subscription
-    fun onRegisterSkyOceanCommand(event: RegisterSkyOceanCommandEvent) {
+    private fun onRegisterSkyOceanCommand(event: RegisterSkyOceanCommandEvent) {
         event.register("accessories") {
             callback {
                 if (!LocationAPI.isOnSkyBlock) {
@@ -199,7 +207,7 @@ object AccessoriesHelper : AbstractItemModifier() {
     override fun appliesTo(itemStack: ItemStack): Boolean {
         if (itemStack.isEmpty) return false
         val category = itemStack[DataTypes.CATEGORY] ?: return false
-        if (!category.equalsAny(SkyBlockCategory.ACCESSORY, SkyBlockCategory.HATCESSORY)) return false
+        if (!category.equalsAny(SkyBlockCategory.ACCESSORY, SkyBlockCategory.HATCESSORY, ignoreDungeon = true)) return false
         val id = itemStack.getSkyBlockId() ?: return false
         return getResult(id) != null
     }

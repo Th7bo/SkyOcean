@@ -49,8 +49,9 @@ object CustomItems : MeowddingLogger by SkyOcean.featureLogger(), LateInitLoader
     private val storage: MeowddingStorageData<MutableList<CustomItemData>> by lazy {
         SkyOcean.storage(
             "custom_items",
-            { mutableListOf() },
-            CodecHelpers.mutableList(),
+            defaultData = { mutableListOf() },
+            differentAlphaData = false,
+            codec = CodecHelpers.mutableList(),
         )
     }
 

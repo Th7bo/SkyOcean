@@ -95,9 +95,6 @@ object CraftHelperManager {
         return trees
     }
 
-    fun resolve(resetLayout: () -> Unit, clear: () -> Unit): CraftHelperTree? =
-        resolveAll(resetLayout, clear).firstOrNull()
-
     fun getTransformers(): List<UnaryOperator<CraftHelperTree>> = buildList {
         CraftHelperConfig.compactedCutoffDegree.takeIf { it > 0 }?.let {
             add { tree -> CompactedResourceCutoffTreeTransformer.apply(it, tree) }
@@ -106,7 +103,7 @@ object CraftHelperManager {
 
     @Subscription(TickEvent::class)
     @TimePassed("5t")
-    fun onTick() {
+    private fun onTick() {
         if (lastData != CraftHelperStorage.activeItems) {
             this.lastData = CraftHelperStorage.activeItems
             hasBeenNotified = false
@@ -191,7 +188,7 @@ object CraftHelperManager {
     }
 
     @Subscription
-    fun registerCommand(event: RegisterSkyOceanCommandEvent) {
+    private fun registerCommand(event: RegisterSkyOceanCommandEvent) {
         event.registerWithCallback("crafthelper") {
             McClient.setScreenAsync { CraftHelperScreen }
         }
@@ -199,29 +196,25 @@ object CraftHelperManager {
 
     @Subscription
     @OnlyOnSkyBlock
-    fun onItemListKeybind(event: ScreenKeyReleasedEvent.Pre) {
+    private fun onItemListKeybind(event: ScreenKeyReleasedEvent.Pre) {
         if (!keybind.matches(event)) return
         highlight(McScreen.asMenu?.getHoveredSlot()?.item)
     }
 
     @Subscription
     @OnlyOnSkyBlock
-    fun onItemListKeybind(event: ItemListEvent.HoveredItemKeyPress) {
+    private fun onItemListKeybind(event: ItemListEvent.HoveredItemKeyPress) {
         if (!keybind.key.matches(event.event)) return
         setItem(event.stack)
     }
 
     @Subscription
     @OnlyOnSkyBlock
-    fun onItemListWidget(event: ItemListEvent.RecipeButtonAdd) {
+    private fun onItemListWidget(event: ItemListEvent.RecipeButtonAdd) {
         event.itemStack.getSkyBlockId() ?: return
         event.register(
             Button.builder(Text.of("\uD83E\uDE93")) {
-                val type = RecipeType.fromRepoLibType(event.recipe.type()) ?: run {
-                    Text.of("Failed to set ItemList Recipe because type ${event.recipe.type()} is unknown.")
-                    return@builder
-                }
-                CraftHelperStorage.setRepoLibRecipe(RepoApiRecipe(event.recipe, type))
+                CraftHelperStorage.setRepoLibRecipe(RepoApiRecipe(event.recipe))
             }.apply {
                 tooltip(Tooltip.create(Text.of("Set as SkyOcean CraftHelper Item")))
                 size(12, 12)

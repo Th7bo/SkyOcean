@@ -13,7 +13,6 @@ import me.owdding.skyocean.events.RegisterSkyOceanCommandEvent
 import me.owdding.skyocean.features.hotkeys.ConditionalHotkeyScreen
 import me.owdding.skyocean.features.hotkeys.IgnoreHotkeyInputs
 import me.owdding.skyocean.generated.SkyOceanCodecs
-import me.owdding.skyocean.utils.Utils.edit
 import me.owdding.skyocean.utils.codecs.CodecHelpers
 import me.owdding.skyocean.utils.debugToggle
 import net.minecraft.client.input.KeyEvent
@@ -52,8 +51,9 @@ object HotkeyManager {
 
     private val storage = SkyOcean.storage(
         "hotkeys",
-        { StoredData(mutableSetOf(), HashSet()) },
-        Codec.withAlternative(
+        defaultData = { StoredData(mutableSetOf(), HashSet()) },
+        differentAlphaData = false,
+        codec = Codec.withAlternative(
             SkyOceanCodecs.HotkeyDataCodec.codec(),
             hotkeySet.xmap({ StoredData(mutableSetOf(), it) }, { it.hotkeys }),
         ),
@@ -102,7 +102,7 @@ object HotkeyManager {
     }
 
     @Subscription(TickEvent::class)
-    fun tick() {
+    private fun tick() {
         if (buffer.isEmpty()) return
         if (lastUpdated + MAX_INPUT_DELAY > System.currentTimeMillis()) return
         invokeValid()
@@ -176,7 +176,7 @@ object HotkeyManager {
     fun releaseAll() = clearBuffers()
 
     @Subscription
-    fun registerCommand(event: RegisterSkyOceanCommandEvent) {
+    private fun registerCommand(event: RegisterSkyOceanCommandEvent) {
         event.registerWithCallback("keybinds") {
             McClient.setScreenAsync { ConditionalHotkeyScreen }
         }
@@ -186,7 +186,7 @@ object HotkeyManager {
     }
 
     @Subscription
-    fun renderDebug(event: RenderHudEvent) {
+    private fun renderDebug(event: RenderHudEvent) {
         if (!debug) return
         val graphics = event.graphics
         var width = 10
@@ -223,8 +223,8 @@ object HotkeyManager {
 
     fun deleteCategory(category: HotkeyCategory) {
         this.storage.edit {
-            hotkeys.removeAll { it.group == category.identifier }
-            categories.removeIf { it.identifier == category.identifier }
+            hotkeys.removeAll { it.group == category.identifier } ||
+                categories.removeIf { it.identifier == category.identifier }
         }
     }
 

@@ -3,12 +3,14 @@ package me.owdding.skyocean.api
 import com.teamresourceful.resourcefullib.common.color.Color
 import earth.terrarium.olympus.client.constants.MinecraftColors
 import me.owdding.ktmodules.Module
+import me.owdding.skyocean.events.RegisterSkyOceanCommandEvent
 import me.owdding.skyocean.events.fishing.FishCatchEvent
 import me.owdding.skyocean.events.fishing.HotspotEvent
 import me.owdding.skyocean.features.fishing.HotspotFeatures
 import me.owdding.skyocean.utils.RemoteStrings
 import me.owdding.skyocean.utils.Utils.hasMaxSpeed
 import me.owdding.skyocean.utils.Utils.roundToHalf
+import me.owdding.skyocean.utils.chat.ChatUtils.sendWithPrefix
 import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.DustParticleOptions
 import net.minecraft.core.particles.ParticleTypes
@@ -31,6 +33,7 @@ import tech.thatgravyboat.skyblockapi.helpers.McLevel
 import tech.thatgravyboat.skyblockapi.utils.extentions.currentInstant
 import tech.thatgravyboat.skyblockapi.utils.extentions.forEachBelow
 import tech.thatgravyboat.skyblockapi.utils.extentions.toFormattedName
+import tech.thatgravyboat.skyblockapi.utils.text.Text
 import tech.thatgravyboat.skyblockapi.utils.text.Text.asComponent
 import tech.thatgravyboat.skyblockapi.utils.text.TextStyle.color
 import kotlin.math.abs
@@ -51,7 +54,7 @@ object HotspotAPI {
 
     @Subscription
     @OnlyOnSkyBlock
-    fun onNameChanged(event: NameChangedEvent) {
+    private fun onNameChanged(event: NameChangedEvent) {
         val pos = event.infoLineEntity.position()
         val type = HotspotType.getType(event.literalComponent) ?: return
         val hotspot = _hotspots.getOrPut(pos.toVec2d()) {
@@ -70,7 +73,7 @@ object HotspotAPI {
     }
 
     @Subscription
-    fun onCatch(event: FishCatchEvent) {
+    private fun onCatch(event: FishCatchEvent) {
         val hookY = event.hookPos.y
         val hookPosD = event.hookPos.toVector3f()
         _hotspots.values.filter {
@@ -83,11 +86,11 @@ object HotspotAPI {
     }
 
     @Subscription(ServerChangeEvent::class)
-    fun onServerChange() = _hotspots.clear()
+    private fun onServerChange() = _hotspots.clear()
 
     @Subscription
     @OnlyOnSkyBlock
-    fun onEntityRemoved(event: EntityRemovedEvent) {
+    private fun onEntityRemoved(event: EntityRemovedEvent) {
         val pos = event.entity.position().toVec2d()
         val hotspot = _hotspots[pos] ?: return
         if (hotspot.id == event.entity.id) {
@@ -98,7 +101,7 @@ object HotspotAPI {
 
     @Subscription
     @OnlyOnSkyBlock
-    fun onParticle(event: PacketReceivedEvent) {
+    private fun onParticle(event: PacketReceivedEvent) {
         val packet = event.packet as? ClientboundLevelParticlesPacket ?: return
         if (!packet.isHotSpotParticle()) return
 
@@ -121,13 +124,13 @@ object HotspotAPI {
 
         val radius = sqrt(match.second).roundToHalf()
 
-        // Count how often a specific radious was calculated and use the most common one
+        // Count how often a specific radius was calculated and use the most common one
         // Should fix stuff like Crab Pets making it flicker
         val counts = match.first.radiusCounts
         counts[radius] = (counts[radius] ?: 0) + 1
         match.first.radius = counts.maxByOrNull { it.value }?.key
 
-        // particles cancelled
+        // particles canceled
         if (HotspotFeatures.shouldHideParticles()) event.cancel()
     }
 
@@ -145,6 +148,14 @@ object HotspotAPI {
         if (!this.hasMaxSpeed(1f)) return false
 
         return true
+    }
+
+    @Subscription
+    private fun onCommand(event: RegisterSkyOceanCommandEvent) {
+        event.registerWithCallback("reset_hotspots") {
+            _hotspots.clear()
+            Text.of("Cleared Hotspot locations").sendWithPrefix()
+        }
     }
 
     private fun Vec3.toVec2d(): Vector2d = Vector2d(this.x, this.z)

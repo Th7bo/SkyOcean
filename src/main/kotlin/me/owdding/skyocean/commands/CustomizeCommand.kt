@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import me.owdding.ktmodules.Module
 import me.owdding.lib.rendering.text.builtin.GradientTextShader
+import me.owdding.lib.rendering.text.serialization.TagComponentSerialization
 import me.owdding.lib.rendering.text.textShader
 import me.owdding.skyocean.events.RegisterSkyOceanCommandEvent
 import me.owdding.skyocean.features.item.custom.CustomItems
@@ -36,7 +37,6 @@ import me.owdding.skyocean.utils.chat.OceanColors
 import me.owdding.skyocean.utils.commands.HexColorArgumentType
 import me.owdding.skyocean.utils.commands.SkyBlockIdArgument
 import me.owdding.skyocean.utils.commands.VirtualResourceArgument
-import me.owdding.skyocean.utils.components.TagComponentSerialization
 import me.owdding.skyocean.utils.extensions.copy
 import me.owdding.skyocean.utils.tags.ItemTagKey
 import net.minecraft.commands.arguments.ResourceKeyArgument
@@ -62,7 +62,7 @@ import tech.thatgravyboat.skyblockapi.utils.text.TextStyle.color
 object CustomizeCommand {
 
     @Subscription
-    fun onCommand(event: RegisterSkyOceanCommandEvent) {
+    private fun onCommand(event: RegisterSkyOceanCommandEvent) {
         event.register("customize") {
             callback {
                 val item = McPlayer.heldItem

@@ -424,16 +424,11 @@ object Utils {
 
     fun componentList(init: TooltipBuilder.() -> Unit) = TooltipBuilder().apply(init).lines()
 
-    inline fun <T : Any> MeowddingStorageData<T>.edit(block: T.() -> Unit) {
-        get().block()
-        save()
-    }
-
     fun ClientboundLevelParticlesPacket.hasMaxSpeed(speed: Float): Boolean {
         //? if >= 26.3
         return this.xMaxSpeed == speed && this.yMaxSpeed == speed && this.zMaxSpeed == speed
         //? else
-        // return this.maxSpeed == speed
+         //return this.maxSpeed == speed
     }
 }
 
@@ -450,7 +445,7 @@ enum class SkyOceanModifyIndicator : Translatable {
 @AutoCollect("LateInitModules")
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class LateInitModule
+internal annotation class LateInitModule
 
 fun interface LateInitLoader {
     fun load()
@@ -459,6 +454,6 @@ fun interface LateInitLoader {
 @AutoCollect("PreInitModules")
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class PreInitModule
+internal annotation class PreInitModule
 
 

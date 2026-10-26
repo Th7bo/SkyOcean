@@ -1,5 +1,7 @@
 package me.owdding.skyocean.features.recipe.crafthelper
 
+import me.owdding.skyocean.features.recipe.Ingredient
+import me.owdding.skyocean.features.recipe.ItemLikeIngredient
 import me.owdding.skyocean.features.recipe.crafthelper.data.CraftHelperRecipeType
 import tech.thatgravyboat.skyblockapi.api.remote.api.SkyBlockId
 import java.util.UUID
@@ -16,6 +18,12 @@ abstract class CraftHelperRecipe(val type: CraftHelperRecipeType) {
 
     interface MultiplesOf {
         val multiples: Int
+    }
+    interface Ingredients {
+        val inputs: List<Ingredient>
+        val output: ItemLikeIngredient?
+
+        val entriesForAddition: List<Ingredient> get() = inputs
     }
 
     abstract fun withGroup(group: UUID?): CraftHelperRecipe

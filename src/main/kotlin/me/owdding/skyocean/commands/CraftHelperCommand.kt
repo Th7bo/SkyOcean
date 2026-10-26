@@ -54,7 +54,7 @@ object CraftHelperCommand {
         }
 
         event.command("multi_recipe") {
-            "clear" executes CraftHelperStorage::clear
+            "clear" executes CraftHelperStorage::removeIngredientRecipe
 
             "add id"(StringArgumentType.greedyString(), CombinedSuggestionProvider(RecipeIdSuggestionProvider, RecipeNameSuggestionProvider)) executes { id ->
                 val item = toId(id) ?: return@executes Text.of("Failed to find item with id $id", CatppuccinColors.Mocha.red).sendWithPrefix()
@@ -95,7 +95,7 @@ object CraftHelperCommand {
                     },
                 )
                 if (inputs.isEmpty()) {
-                    CraftHelperStorage.clear()
+                    CraftHelperStorage.removeIngredientRecipe()
                     Text.of("Removed item and cleared recipe!", CatppuccinColors.Mocha.green).sendWithPrefix()
                     return@executes
                 }

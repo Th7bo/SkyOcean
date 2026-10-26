@@ -67,28 +67,31 @@ object CraftHelperStorage {
         }
     )
 
-    private val categoryStorage = SkyOcean.profileStorage<MutableList<CraftHelperCategory>>(
+    private val categoryStorage = SkyOcean.profileStorage(
         fileName = "craft_helper_categories",
-        defaultData = { mutableListOf() },
+        defaultData = { mutableListOf<CraftHelperCategory>() },
         version = 0,
-    ) { version ->
-        when (version) {
-            0 -> SkyOceanCodecs.CraftHelperCategoryCodec.codec().listOf()
-                .xmap({ it.toMutableList() }, { it.toList() })
-            else -> CodecHelpers.unit { mutableListOf() }
-        }
-    }
+        codec = { version ->
+            when (version) {
+                0 -> SkyOceanCodecs.CraftHelperCategoryCodec.codec().listOf()
+                    .xmap({ it.toMutableList() }, { it.toList() })
 
-    private val activeCategoryStorage = SkyOcean.profileStorage<String>(
+                else -> CodecHelpers.unit { mutableListOf() }
+            }
+        },
+    )
+
+    private val activeCategoryStorage = SkyOcean.profileStorage(
         fileName = "craft_helper_active_category",
         defaultData = { ALL_CATEGORY_KEY },
         version = 0,
-    ) { version ->
-        when (version) {
-            0 -> Codec.STRING
-            else -> CodecHelpers.unit { ALL_CATEGORY_KEY }
-        }
-    }
+        codec = { version ->
+            when (version) {
+                0 -> Codec.STRING
+                else -> CodecHelpers.unit { ALL_CATEGORY_KEY }
+            }
+        },
+    )
 
     val items: List<CraftHelperRecipe> get() = storage.get() ?: emptyList()
     val categories: List<CraftHelperCategory> get() = categoryStorage.get() ?: emptyList()
@@ -244,6 +247,15 @@ object CraftHelperStorage {
         else -> categories.firstOrNull { it.identifier.toString() == key }
     }
 
+    /**
+     * Drops only the active category's custom ingredient recipe. Upstream could call [clear] for
+     * this because it stored a single recipe; here [clear] would take the whole category with it.
+     */
+    fun removeIngredientRecipe() {
+        val index = activeItems.indexOfFirst { it is IngredientCraftHelperRecipe }
+        if (index != -1) removeItem(index)
+    }
+
     fun <T> addToIngredientRecipe(recipe: T) where T : CraftHelperRecipe, T : CraftHelperRecipe.Ingredients {
         getOrCreateIngredientRecipe().add(recipe.entriesForAddition.map { it.withAmount(it.amount * recipe.amount) })
         save()
@@ -263,7 +275,9 @@ object CraftHelperStorage {
             add(inputs.map { it.withAmount(it.amount * seed.amount) })
         }
         set(newRecipe)
-        return newRecipe
+        // set() may store a withGroup copy, and callers mutate what they get back, so hand out
+        // the instance that actually landed in storage rather than the local one.
+        return activeItems.filterIsInstance<IngredientCraftHelperRecipe>().firstOrNull() ?: newRecipe
     }
 
 }

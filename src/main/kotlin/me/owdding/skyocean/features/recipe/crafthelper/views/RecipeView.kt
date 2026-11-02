@@ -5,6 +5,8 @@ import earth.terrarium.olympus.client.components.Widgets
 import earth.terrarium.olympus.client.components.buttons.Button
 import earth.terrarium.olympus.client.constants.MinecraftColors
 import me.owdding.lib.displays.DisplayWidget
+import me.owdding.lib.displays.Alignment
+import me.owdding.lib.displays.Display
 import me.owdding.lib.displays.Displays
 import me.owdding.lib.extensions.floor
 import me.owdding.lib.extensions.toReadableTime
@@ -348,7 +350,23 @@ class WidgetBuilder(val includeParentOverride: Boolean? = null, val refreshCallb
     fun nameOrNull() = (state.ingredient as? SkyOceanItemIngredient)?.itemName
 
     context(state: CraftHelperState)
-    fun text(prefix: String = "") = Displays.component(
+    fun text(prefix: String = ""): Display {
+        val icon = state.ingredient.takeIf { CraftHelperConfig.showItemIcons }
+            ?.let { it as? ItemLikeIngredient }
+            ?.let { Displays.item(it.item, ROW_ICON_SIZE, ROW_ICON_SIZE) }
+            ?: return rowText(prefix)
+
+        // The prefix stays outside the icon so the tree lines keep touching each other vertically.
+        return Displays.row(
+            Displays.component(shadow = true, component = Text.of(prefix) { this.color = TextColor.DARK_GRAY }),
+            icon,
+            rowText(prefix = "", withLeadingSpace = true),
+            alignment = Alignment.CENTER,
+        )
+    }
+
+    context(state: CraftHelperState)
+    private fun rowText(prefix: String = "", withLeadingSpace: Boolean = false) = Displays.component(
         shadow = true,
         component = Text.of {
             val parentAmount = if ((includeParentOverride != null && includeParentOverride) || CraftHelperConfig.parentAmount) {
@@ -358,6 +376,7 @@ class WidgetBuilder(val includeParentOverride: Boolean? = null, val refreshCallb
             val needed = (state.required + parentAmount)
             val available = state.amount + parentAmount
             append(prefix) { this.color = TextColor.DARK_GRAY }
+            if (withLeadingSpace) append(" ")
             append {
                 when {
                     state.isDone() -> {
@@ -401,6 +420,7 @@ class WidgetBuilder(val includeParentOverride: Boolean? = null, val refreshCallb
         },
     )
 
+
     context(state: CraftHelperState)
     fun listEntry(prefix: String = ""): Button = Widgets.button {
         val tooltip = this.tooltip()
@@ -440,3 +460,5 @@ class WidgetBuilder(val includeParentOverride: Boolean? = null, val refreshCallb
     }.withoutTooltipDelay()
 
 }
+
+private const val ROW_ICON_SIZE = 10

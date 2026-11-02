@@ -65,6 +65,10 @@ object CraftHelperConfig : CategoryKt("crafthelper") {
         translation = "skyocean.config.misc.crafthelper.show_eta"
     }
 
+    var showItemIcons by boolean(true) {
+        translation = "skyocean.config.misc.crafthelper.show_item_icons"
+    }
+
     var overlayBackground by boolean(false) {
         translation = "skyocean.config.misc.crafthelper.overlay_background"
     }

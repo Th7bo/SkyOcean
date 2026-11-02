@@ -885,6 +885,10 @@
             "@value": "Show gathering ETA",
             "desc": "Shows an estimated time until an ingredient is fully gathered while you actively collect it (e.g. mining gold)."
           },
+          "show_item_icons": {
+            "@value": "Show item icons",
+            "desc": "Draws each ingredient's item next to its row instead of text alone."
+          },
           "transformers": {
             "@value": "Tree transformers",
             "desc": "The following settings will alter the recipe tree in different ways, letting you customize the appearance and complexity.",

@@ -25,4 +25,4 @@ renderchest = { module = "net.azureaaron:render-chest", version.ref = "renderche
 # Skysoft ships several builds under the same version number, so the Modrinth version id is
 # used instead of "0.1.15" to pin the MC 26.2 one.
 # Compile-only: used by the craft-helper Skysoft compat (me.owdding.skyocean.compat.skysoft / mixins.compat.skysoft).
-skysoft = { module = "maven.modrinth:skysoft", version = "ZP95BWhv" }
+skysoft = { module = "maven.modrinth:skysoft", version = "9hwzznL2" }

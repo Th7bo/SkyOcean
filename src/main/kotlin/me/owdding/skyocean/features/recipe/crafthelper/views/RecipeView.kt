@@ -365,8 +365,12 @@ class WidgetBuilder(val includeParentOverride: Boolean? = null, val refreshCallb
             Displays.component(shadow = true, component = Text.of(prefix) { this.color = TextColor.DARK_GRAY }),
             icon ?: Displays.empty(),
             // Amounts are variable width, so they get a measured column of their own; without it
-            // every name would start at a different x.
-            Displays.center(amountColumnWidth.coerceAtLeast(amount.getWidth()), amount.getHeight(), amount),
+            // every name would start at a different x. Right-aligned, so the digits line up on the
+            // slash rather than drifting with the number's length.
+            Displays.row(
+                Displays.empty((amountColumnWidth - amount.getWidth()).coerceAtLeast(0), 0),
+                amount,
+            ),
             label,
             spacing = ROW_COLUMN_SPACING,
             alignment = Alignment.CENTER,

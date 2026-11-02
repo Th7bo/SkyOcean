@@ -43,6 +43,7 @@ import net.minecraft.util.ARGB
 import tech.thatgravyboat.skyblockapi.api.profile.profile.ProfileAPI
 import tech.thatgravyboat.skyblockapi.api.profile.profile.ProfileType
 import tech.thatgravyboat.skyblockapi.helpers.McClient
+import tech.thatgravyboat.skyblockapi.helpers.McFont
 import tech.thatgravyboat.skyblockapi.helpers.McScreen
 import tech.thatgravyboat.skyblockapi.utils.extentions.toFormattedString
 import tech.thatgravyboat.skyblockapi.utils.extentions.until
@@ -215,6 +216,8 @@ data class CraftHelperContext(
 }
 
 class WidgetBuilder(val includeParentOverride: Boolean? = null, val refreshCallback: (save: Boolean) -> Unit) {
+    private var amountColumnWidth: Int = 0
+
     companion object {
         val noOp = WidgetBuilder {}
     }
@@ -351,75 +354,80 @@ class WidgetBuilder(val includeParentOverride: Boolean? = null, val refreshCallb
 
     context(state: CraftHelperState)
     fun text(prefix: String = ""): Display {
+        val amount = Displays.component(shadow = true, component = amountComponent())
+        val label = Displays.component(shadow = true, component = labelComponent())
         val icon = state.ingredient.takeIf { CraftHelperConfig.showItemIcons }
             ?.let { it as? ItemLikeIngredient }
             ?.let { Displays.item(it.item, ROW_ICON_SIZE, ROW_ICON_SIZE) }
-            ?: return rowText(prefix)
 
-        // The prefix stays outside the icon so the tree lines keep touching each other vertically.
         return Displays.row(
+            // The prefix stays its own column so the tree lines connect vertically.
             Displays.component(shadow = true, component = Text.of(prefix) { this.color = TextColor.DARK_GRAY }),
-            icon,
-            rowText(prefix = "", withLeadingSpace = true),
+            icon ?: Displays.empty(),
+            // Amounts are variable width, so they get a measured column of their own; without it
+            // every name would start at a different x.
+            Displays.center(amountColumnWidth.coerceAtLeast(amount.getWidth()), amount.getHeight(), amount),
+            label,
+            spacing = ROW_COLUMN_SPACING,
             alignment = Alignment.CENTER,
         )
     }
 
+    /** Owned over required, coloured by how close this entry is to done. */
     context(state: CraftHelperState)
-    private fun rowText(prefix: String = "", withLeadingSpace: Boolean = false) = Displays.component(
-        shadow = true,
-        component = Text.of {
-            val parentAmount = if ((includeParentOverride != null && includeParentOverride) || CraftHelperConfig.parentAmount) {
-                state.amountThroughParents
-            } else 0
+    private fun amountComponent(): Component = Text.of {
+        val needed = neededAmount()
+        val available = availableAmount()
+        append(available.toFormattedString())
+        append("/") { color = TextColor.DARK_GRAY }
+        append(needed.toFormattedString())
+        this.color = when {
+            state.isDone() -> TextColor.GREEN
+            state.childrenDone -> TextColor.YELLOW
+            else -> ARGB.linearLerp(available.toFloat() / needed.toFloat(), TextColor.RED, TextColor.GREEN)
+        }
+    }
 
-            val needed = (state.required + parentAmount)
-            val available = state.amount + parentAmount
-            append(prefix) { this.color = TextColor.DARK_GRAY }
-            if (withLeadingSpace) append(" ")
-            append {
-                when {
-                    state.isDone() -> {
-                        append(Icons.CHECKMARK)
-                        this.color = TextColor.GREEN
-                        this.bold = true
-                    }
+    context(state: CraftHelperState)
+    private fun labelComponent(): Component = Text.of {
+        append(this@WidgetBuilder.name())
+        this@WidgetBuilder.getIcons().takeIf { it.string.isNotEmpty() }?.let {
+            append(" ")
+            append(it)
+        }
 
-                    state.childrenDone -> {
-                        append(Icons.WARNING)
-                        this.color = TextColor.YELLOW
-                    }
-
-                    else -> {
-                        append(Icons.CROSS)
-                        this.color = TextColor.RED
-                        this.bold = true
-                    }
-                }
+        if (CraftHelperConfig.showEta && !state.hasChildren && !state.isDone()) {
+            val missing = neededAmount() - availableAmount()
+            CraftHelperEtaTracker.getEta(state.ingredient.serialize(), missing)?.let { eta ->
                 append(" ")
+                append("(${eta.toReadableTime()})") { this.color = TextColor.DARK_AQUA }
             }
-            append {
-                append(available.toFormattedString())
-                append("/") { color = TextColor.GRAY }
-                append(needed.toFormattedString())
+        }
+    }
 
-                this.color = ARGB.linearLerp(available.toFloat() / needed.toFloat(), TextColor.RED, TextColor.GREEN)
-            }
+    context(state: CraftHelperState)
+    private fun parentAmount() =
+        if ((includeParentOverride != null && includeParentOverride) || CraftHelperConfig.parentAmount) {
+            state.amountThroughParents
+        } else {
+            0
+        }
 
-            append(" ")
-            append(this@WidgetBuilder.name())
-            append(" ")
-            append(this@WidgetBuilder.getIcons())
+    context(state: CraftHelperState)
+    private fun neededAmount() = state.required + parentAmount()
 
-            if (CraftHelperConfig.showEta && !state.hasChildren && !state.isDone()) {
-                CraftHelperEtaTracker.getEta(state.ingredient.serialize(), needed - available)?.let { eta ->
-                    append(" ")
-                    append("(${eta.toReadableTime()})") { this.color = TextColor.AQUA }
-                }
-            }
-        },
-    )
+    context(state: CraftHelperState)
+    private fun availableAmount() = state.amount + parentAmount()
 
+    /**
+     * Widest amount cell across the rows about to be emitted. Formatters set this before building
+     * their rows so the name column lines up; left at 0 each row just sizes to its own amount.
+     */
+    fun measureAmountColumn(states: Collection<CraftHelperState>) {
+        amountColumnWidth = states.maxOfOrNull { state ->
+            context(state) { McFont.width(amountComponent()) }
+        } ?: 0
+    }
 
     context(state: CraftHelperState)
     fun listEntry(prefix: String = ""): Button = Widgets.button {
@@ -462,3 +470,4 @@ class WidgetBuilder(val includeParentOverride: Boolean? = null, val refreshCallb
 }
 
 private const val ROW_ICON_SIZE = 10
+private const val ROW_COLUMN_SPACING = 2

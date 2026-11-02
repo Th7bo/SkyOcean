@@ -15,8 +15,10 @@ data class RawFormatter private constructor(val withPrefix: Boolean) : RecipeVie
         widgetConsumer: (AbstractWidget) -> Unit,
     ) {
         val childLess = state.collect().filterNot { it.hasChildren }.groupBy { it.ingredient.serialize() }.values
+        val merged = childLess.map(CraftHelperState::merge)
+        widget.measureAmountColumn(merged)
 
-        childLess.map(CraftHelperState::merge).forEachIndexed { index, state ->
+        merged.forEachIndexed { index, state ->
             if (state.isDone() && CraftHelperConfig.rawFormatterHideCompleted) return@forEachIndexed
             context(state) {
                 widgetConsumer(

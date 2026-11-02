@@ -88,6 +88,7 @@ object CraftHelperOverlay : SkyOceanOverlay() {
             LayoutFactory.vertical {
                 textDisplay("Total (${roots.size} items)", 0u, true) { this.color = TextColor.GREEN }
                 spacer(height = 2)
+                builder.measureAmountColumn(mergedLeaves)
                 mergedLeaves.forEach { mergedState ->
                     if (mergedState.isDone() && CraftHelperConfig.rawFormatterHideCompleted) return@forEach
                     context(mergedState) {

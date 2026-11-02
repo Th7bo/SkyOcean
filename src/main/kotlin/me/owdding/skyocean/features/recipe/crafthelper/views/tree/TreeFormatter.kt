@@ -11,7 +11,10 @@ object TreeFormatter : RecipeView {
         state: CraftHelperState,
         widget: WidgetBuilder,
         widgetConsumer: (AbstractWidget) -> Unit,
-    ) = append(state, widget, widgetConsumer)
+    ) {
+        widget.measureAmountColumn(state.collect())
+        append(state, widget, widgetConsumer)
+    }
 
     fun append(state: CraftHelperState, widget: WidgetBuilder, widgetConsumer: (AbstractWidget) -> Unit, depth: Int = 0, prefix: String = ""): Unit =
         context(state) {

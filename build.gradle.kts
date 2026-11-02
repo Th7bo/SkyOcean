@@ -32,8 +32,6 @@ repositories {
     )
     scopedMaven("https://maven.nucleoid.xyz/", "eu.pb4")
     scopedMaven("https://maven.azureaaron.net/releases", "net.azureaaron")
-    scopedMaven("https://maven.shedaniel.me/", "me.shedaniel")
-    scopedMaven("https://maven.architectury.dev/", "dev.architectury")
     mavenCentral()
     mavenLocal()
 }
@@ -267,7 +265,5 @@ dependencies {
     ksp(versionedCatalog["meowdding.ktmodules"])
     ksp(versionedCatalog["meowdding.ktcodecs"])
 
-    versionedCatalog.getOrNull("rei.api")?.let { compileOnly(it) }
-    versionedCatalog.getOrNull("reliable.recipe.viewer")?.let { compileOnly(it) }
     versionedCatalog.getOrNull("skysoft")?.let { compileOnly(it) }
 }

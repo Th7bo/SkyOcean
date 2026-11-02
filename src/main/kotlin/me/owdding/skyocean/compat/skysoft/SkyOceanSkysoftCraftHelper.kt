@@ -16,8 +16,7 @@ import tech.thatgravyboat.skyblockapi.helpers.McClient
 import tech.thatgravyboat.skyblockapi.helpers.McFont
 
 /**
- * Adds the craft-helper button to Skysoft's item list viewer, mirroring the RRV support in
- * [me.owdding.skyocean.compat.rrv.SkyOceanRrvCraftHelper].
+ * Adds the craft-helper button to Skysoft's item list viewer.
  *
  * Skysoft's viewer draws everything itself instead of using widgets, so the button is drawn with
  * Skysoft's own [PixelButtonRenderer] and clicks are resolved against the bounds collected while

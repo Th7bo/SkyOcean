@@ -46,7 +46,7 @@ import tech.thatgravyboat.skyblockapi.utils.text.Text
 import tech.thatgravyboat.skyblockapi.utils.text.TextStyle.color
 import tech.thatgravyboat.skyblockapi.utils.text.TextStyle.hover
 import tech.thatgravyboat.skyblockapi.utils.text.TextStyle.onClick
-import java.util.*
+import java.util.EnumSet
 import kotlin.math.roundToInt
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty0
@@ -67,7 +67,7 @@ object AccessoriesAPI {
     fun AccessoryFamily.isDisallowed(): Boolean = isDisallowedOriginFamily(family)
     fun AccessoryFamily.isRiftPrism(): Boolean = family == "rift_prism"
 
-    fun getAp(item: ItemStack): Int = accessoryPower?.getAccessoryPower(item) ?: 1
+    fun getAp(item: ItemStack): Int = accessoryPower?.getAccessoryPower(item) ?: 0
 
     private fun calculateIsDisallowedOrigin(family: AccessoryFamily): Boolean {
         return family.flatMapItems().any { id ->
@@ -176,7 +176,7 @@ object AccessoriesAPI {
     private fun checkMissingAccessories() {
         val allAccessories = SimpleItemAPI.getAllIds().filterTo(mutableSetOf()) {
             val category = it.toItem().getData(DataTypes.CATEGORY) ?: return@filterTo false
-            category.equalsAny(SkyBlockCategory.ACCESSORY, SkyBlockCategory.HATCESSORY, ignoreDungeon = true)
+            category.equalsAny(SkyBlockCategory.ACCESSORY, SkyBlockCategory.HATCESSORY, ignoreModifiers = true)
         }
         val storedAccessories: Set<SkyBlockId> = buildSet {
             families.values.forEach { family ->
